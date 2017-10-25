@@ -49,7 +49,6 @@ public class ZkTaskManager {
 		try {
 			ZkTaskPath.initOrgPath();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			managerLOG.error(e.getMessage());
 			e.printStackTrace();
 		}
@@ -62,7 +61,6 @@ public class ZkTaskManager {
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 			}
 		}
 		try {
@@ -70,7 +68,6 @@ public class ZkTaskManager {
 			new Thread(new ProcessHandler(autoClientsMonitor,TaskType.AUTO.name())).start();
 			new Thread(new ProcessHandler(performClientsMonitor,TaskType.PERFORME.name())).start();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
