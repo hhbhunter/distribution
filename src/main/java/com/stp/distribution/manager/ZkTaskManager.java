@@ -1,7 +1,5 @@
 package com.stp.distribution.manager;
-/**
- * @author houhuibin
- */
+
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
@@ -22,10 +20,13 @@ import com.stp.distribution.process.ProcessHandler;
 import com.stp.distribution.process.ProcessService;
 import com.stp.distribution.process.ProcessTaskListen;
 import com.stp.distribution.user.TaskCache;
-import com.stp.distribution.user.ZkTaskControll;
 
 
-//controll task 
+/**
+ * controll task 
+ * @author houhuibin
+ *
+ */
 public class ZkTaskManager {
 	private static final Logger managerLOG = LoggerFactory.getLogger(ZkTaskManager.class);
 
@@ -33,9 +34,6 @@ public class ZkTaskManager {
 	public static IZkTaskOperat zkTaskOperat;
 
 	public static ReentrantLock lock=new ReentrantLock();
-
-	/*public static ZkTaskControll autoTaskControll;
-	public static ZkTaskControll performTaskControll;*/
 
 	public static ZkRegistMonitor autoClientsMonitor;
 	public static ZkRegistMonitor performClientsMonitor;
@@ -56,7 +54,6 @@ public class ZkTaskManager {
 			e.printStackTrace();
 		}
 		initProcess();
-//		initControl();
 		initRegistMonitor();
 	}
 
@@ -70,7 +67,6 @@ public class ZkTaskManager {
 		}
 		try {
 			initProcessTaskListen();
-//			new Thread(new ZkTaskOperatImp()).start();
 			new Thread(new ProcessHandler(autoClientsMonitor,TaskType.AUTO.name())).start();
 			new Thread(new ProcessHandler(performClientsMonitor,TaskType.PERFORME.name())).start();
 		} catch (Exception e) {
@@ -80,14 +76,6 @@ public class ZkTaskManager {
 	}
 
 
-
-	/*void initControl(){
-		autoTaskControll=new ZkTaskControll(zkInstance,TaskType.AUTO.name() );
-		performTaskControll=new ZkTaskControll(zkInstance,TaskType.PERFORME.name() );
-		autoTaskControll.initControll();
-		performTaskControll.initControll();
-
-	}*/
 
 	void initRegistMonitor(){
 		autoClientsMonitor=new ZkRegistMonitor(zkInstance, TaskType.AUTO.name());
@@ -168,7 +156,6 @@ public class ZkTaskManager {
 
 	}
 	public static void initAllProTaskListen(String type) throws Exception{
-		//		ProcessService ps=new ProcessService();
 		String path=ZkTaskPath.getProcessPath(type);
 		List<String> clidrens=ZkDataUtils.getChildren(path);
 		clidrens.remove("current");
@@ -176,10 +163,6 @@ public class ZkTaskManager {
 			ProcessTaskListen processTaskListen=new ProcessTaskListen(zkInstance);
 			processTaskListen.startProcessTaskListen(taskid,type);
 			ProcessService.taskListen.put(Integer.parseInt(taskid), processTaskListen);
-			//			Map<String,String> data=ZkDataUtils.getMapData(ZKPaths.makePath(path, taskid));
-			//			ZkTask task=ProcessTaskOperate.getTaskByPath(data.get(ProcessKey.SRC));
-			//			ps.collectStat(data, task);
-			//			ps.updateNodeData(data, task, ps.taskStats.get(task.getTaskid()));
 
 		}
 		Thread.sleep(1000);
