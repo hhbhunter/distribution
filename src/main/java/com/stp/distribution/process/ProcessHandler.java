@@ -70,7 +70,7 @@ public class ProcessHandler implements Runnable {//Callable<String>
 	public String processTaskHandler(){
 		try {
 			currTaskPath=ProcessTaskOperate.getCurrentTaskIndex(type);
-			processLOG.info(type + "current index=="+currTaskPath);
+			processLOG.debug(type + "current index=="+currTaskPath);
 			return creatProcessTask(type,0l);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -85,7 +85,7 @@ public class ProcessHandler implements Runnable {//Callable<String>
 		}
 
 		String newTaskPath=ProcessTaskOperate.genrateNewIndex(type, String.valueOf(newIndex));
-		processLOG.info(type + " new processTask==="+newTaskPath);
+		processLOG.debug(type + " new processTask==="+newTaskPath);
 
 		try {
 			if(!ZkDataUtils.isExists(newTaskPath)){

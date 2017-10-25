@@ -21,7 +21,7 @@ public class ClientStart {
 		init(myclientpath);
 	}
 	
-	private static void startControll(){
+	private static void startManager(){
 		ZkTaskManager taskManager=new ZkTaskManager();
 		taskManager.initAll();
 		taskManager.startTaskExecute();
@@ -31,7 +31,7 @@ public class ClientStart {
 		if(ZKConfig.getRole().equalsIgnoreCase("client")){
 			startClient();
 		}else{
-			startControll();
+			startManager();
 		}
 		
 		while(true){
