@@ -1,5 +1,7 @@
 package com.stp.distribution.client;
-
+/**
+ * @author hhbhunter
+ */
 import java.util.List;
 import java.util.Map;
 

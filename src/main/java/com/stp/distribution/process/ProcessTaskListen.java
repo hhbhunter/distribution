@@ -1,5 +1,9 @@
 package com.stp.distribution.process;
-
+/**
+ * 
+ * @author hhbhunter
+ *
+ */
 import java.io.IOException;
 
 import org.apache.curator.framework.CuratorFramework;

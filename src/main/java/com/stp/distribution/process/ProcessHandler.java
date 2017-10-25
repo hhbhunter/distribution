@@ -1,5 +1,9 @@
 package com.stp.distribution.process;
-
+/**
+ * 
+ * @author hhbhunter
+ *
+ */
 import org.apache.curator.utils.ZKPaths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

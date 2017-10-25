@@ -1,5 +1,9 @@
 package com.stp.distribution.user;
-
+/**
+ * 
+ * @author hhbhunter
+ *
+ */
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;

@@ -1,12 +1,15 @@
 package com.stp.distribution.user;
-
+/**
+ * 
+ * @author hhbhunter
+ *
+ */
 import java.util.concurrent.Executor;
 
 import org.apache.curator.utils.ZKPaths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alibaba.fastjson.JSON;
 import com.stp.distribution.entity.ZkTask;
 import com.stp.distribution.entity.ZkTaskStatus;
 import com.stp.distribution.framwork.IZkTaskOperat;

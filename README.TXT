@@ -1,6 +1,15 @@
-分布式执行：
-zkclientconfig.properties 属性zkclient_role=client/manger 来启动不同角色
-需实现 TaskResults类中updateDB 更新数据库逻辑
-TaskCreaterService 提供add、stop方法，需执行init方法一次(只能一次)
+
+本项目是基于zookeeper分布式执行调度：
+1、分为3个角色：client、control、manager
+2、client 负责命令执行
+3、control 任务中心，保证任务的有序性
+4、manager 管控中心，负责任务的管理分发
+
+使用说明：
+1、zkclientconfig.properties 属性zkclient_role=client/manger 来启动不同角色
+2、需实现 TaskResults类中updateDB 更新数据库逻辑
+3、TaskCreaterService 提供add、stop方法，供外部业务接入
+
+
 
 

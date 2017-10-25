@@ -1,5 +1,10 @@
 package com.stp.distribution.user;
-
+/**
+ * 
+ * @author hhbhunter
+ * 提供addTask、stopTask
+ *
+ */
 import org.apache.curator.framework.recipes.cache.NodeCache;
 import org.apache.curator.framework.recipes.cache.NodeCacheListener;
 import org.apache.zookeeper.CreateMode;
@@ -12,14 +17,10 @@ import com.stp.distribution.framwork.ZkDataUtils;
 import com.stp.distribution.framwork.ZkTaskPath;
 import com.stp.distribution.util.UtilTool;
 
-/**
- * 提供addTask、stopTask
- * @author houhuibin
- *
- */
 
 public class TaskCreaterService {
 	private static final Logger taskLOG = LoggerFactory.getLogger(TaskCreaterService.class);
+	public static boolean first=true;
 	static ZkTaskOperatImp taskOperat=new ZkTaskOperatImp();
 	public static ZkTaskControll autoTaskControll;
 	public static ZkTaskControll performTaskControll;
@@ -27,6 +28,10 @@ public class TaskCreaterService {
 	
 	public TaskCreaterService(TaskResults taskRes){
 		this.taskRes=taskRes;
+		if(first){
+			init();//不推荐的方式
+			first=false;
+		}
 	}
 	
 	//需提前初始化

@@ -1,5 +1,9 @@
 package com.stp.distribution.process;
-
+/**
+ * 
+ * @author hhbhunter
+ *
+ */
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 

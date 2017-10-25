@@ -1,5 +1,9 @@
 package com.stp.distribution.process;
-
+/**
+ * 
+ * @author hhbhunter
+ *
+ */
 import java.util.Map;
 
 import com.stp.distribution.entity.ZkTask;

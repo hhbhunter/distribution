@@ -1,15 +1,20 @@
-package com.stp.distribution.framwork;
+package com.stp.distribution.util;
 
 import java.util.Collections;
 import java.util.List;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.utils.ZKPaths;
+
 import com.stp.distribution.entity.TaskType;
+import com.stp.distribution.framwork.ZKConfig;
+import com.stp.distribution.framwork.ZKinstance;
+import com.stp.distribution.framwork.ZkDataUtils;
+import com.stp.distribution.framwork.ZkTaskPath;
 
 /**
  * 查询删除工具
- * @author houhuibin
+ * @author hhbhunter
  *
  */
 public class NodeListen {

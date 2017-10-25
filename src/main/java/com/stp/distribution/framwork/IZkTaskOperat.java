@@ -1,5 +1,9 @@
 package com.stp.distribution.framwork;
-
+/**
+ * 
+ * @author hhbhunter
+ *
+ */
 import java.util.concurrent.Executor;
 
 import com.stp.distribution.entity.ZkTask;

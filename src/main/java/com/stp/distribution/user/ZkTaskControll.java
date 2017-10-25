@@ -1,6 +1,10 @@
 package com.stp.distribution.user;
 
-
+/**
+ * 
+ * @author hhbhunter
+ *
+ */
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;

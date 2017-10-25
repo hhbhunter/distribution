@@ -1,5 +1,9 @@
 package com.stp.distribution.user;
-
+/**
+ * 
+ * @author hhbhunter
+ *
+ */
 import java.util.HashMap;
 import java.util.Map;
 

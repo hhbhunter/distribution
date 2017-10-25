@@ -1,5 +1,9 @@
 package com.stp.distribution.util;
-
+/**
+ * 
+ * @author hhbhunter
+ *
+ */
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

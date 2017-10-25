@@ -1,5 +1,9 @@
 package com.stp.distribution.util;
-
+/**
+ * 
+ * @author hhbhunter
+ *
+ */
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;

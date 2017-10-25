@@ -1,5 +1,9 @@
 package com.stp.distribution.entity;
-
+/**
+ * 
+ * @author hhbhunter
+ *
+ */
 import java.util.ArrayList;
 import java.util.List;
 import com.alibaba.fastjson.JSON;

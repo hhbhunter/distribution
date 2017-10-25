@@ -1,5 +1,9 @@
 package com.stp.distribution.framwork;
-
+/**
+ * 
+ * @author hhbhunter
+ *
+ */
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.RetryNTimes;

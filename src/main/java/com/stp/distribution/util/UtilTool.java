@@ -1,5 +1,9 @@
 package com.stp.distribution.util;
-
+/**
+ * 
+ * @author hhbhunter
+ *
+ */
 import java.net.InetAddress;
 
 public class UtilTool {

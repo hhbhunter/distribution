@@ -1,5 +1,9 @@
 package com.stp.distribution.manager;
-
+/**
+ * 
+ * @author hhbhunter
+ *
+ */
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;

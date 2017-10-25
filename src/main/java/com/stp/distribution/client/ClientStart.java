@@ -1,6 +1,6 @@
 package com.stp.distribution.client;
 /**
- * @author houhuibin
+ * @author hhbhunter
  */
 
 import com.stp.distribution.framwork.ZKConfig;

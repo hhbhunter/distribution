@@ -24,7 +24,7 @@ import com.stp.distribution.user.TaskCache;
 
 /**
  * controll task 
- * @author houhuibin
+ * @author hhbhunter
  *
  */
 public class ZkTaskManager {

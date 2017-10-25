@@ -1,5 +1,9 @@
 package com.stp.distribution.framwork;
-
+/**
+ * 
+ * @author hhbhunter
+ *
+ */
 import org.apache.curator.utils.ZKPaths;
 import org.apache.zookeeper.CreateMode;
 

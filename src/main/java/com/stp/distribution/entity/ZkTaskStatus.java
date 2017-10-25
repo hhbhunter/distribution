@@ -1,5 +1,9 @@
 package com.stp.distribution.entity;
-
+/**
+ * 
+ * @author hhbhunter
+ *
+ */
 public enum ZkTaskStatus  {
 	check(-1),
 	//任务状态最终完成

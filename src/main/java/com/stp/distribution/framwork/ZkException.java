@@ -4,7 +4,7 @@ public class ZkException extends RuntimeException{
 
 
 	/**
-	 * @author houhuibin
+	 * @author hhbhunter
 	 */
 	private static final long serialVersionUID = 123321L;
 	
