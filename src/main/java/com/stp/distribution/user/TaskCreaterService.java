@@ -25,13 +25,16 @@ public class TaskCreaterService {
 	public static ZkTaskControll autoTaskControll;
 	public static ZkTaskControll performTaskControll;
 	static TaskResults taskRes;
-	
+	// if you use it in web should init zkdatautil.class
 	public TaskCreaterService(TaskResults taskRes){
 		this.taskRes=taskRes;
-		if(first){
-			init();//不推荐的方式
-			first=false;
+		synchronized (this) {
+			if(first){
+				init();//不推荐的方式
+				first=false;
+			}
 		}
+		
 	}
 	
 	//需提前初始化

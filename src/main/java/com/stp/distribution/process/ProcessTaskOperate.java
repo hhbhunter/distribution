@@ -134,7 +134,7 @@ public class ProcessTaskOperate {
 		if(ZkDataUtils.isExists(processPath)){
 			processLOG.error("process "+task.getType()+" taskid = "+task.getTaskid()+" is exists !!");
 			// 当前会跳过已存在任务，往下执行，有可能产生僵尸任务
-						zombieTask(task,processPath);
+			zombieTask(task,processPath);
 			return false;
 		}
 		if(!ZkTaskManager.choiceClient2task(task)){

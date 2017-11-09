@@ -39,9 +39,9 @@ public class ZkClientTask {
 		String dataPath = null;
 		try {
 			dataPath=event.getData().getPath();
-			clientLOG.info("datapath="+dataPath);
+			clientLOG.debug("datapath="+dataPath);
 			String taskjson=new String(event.getData().getData(),ZKConfig.getZkCharset());
-			clientLOG.info("taskjson==="+taskjson);
+			clientLOG.debug("taskjson==="+taskjson);
 			task = TaskCache.json2zktask(taskjson);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -56,8 +56,6 @@ public class ZkClientTask {
 			clientLOG.info("client CHILD_ADDED data ==== "+event.getData().getPath());
 			updateMonitorNum(1, task.getType(),myip);
 			map.put(task.getTaskid(), task);
-			//更新执行数量
-			//			execut(task);/*调试*/
 			clientZkTaskEvent(task);
 			break;
 		case CHILD_REMOVED:
@@ -212,11 +210,22 @@ public class ZkClientTask {
 				if(exe!=null)
 					exe.stop();
 			}
+			
 			switch (TaskType.valueOf(task.getType())) {
 			case AUTO:
 				task.setStat(ZkTaskStatus.finish.name());
 				break;
 			case PERFORME:
+				if(!new File(task.getCmdPath()).exists()){
+					task.setLog(task.getCmdPath()+" is not exist !!");
+					task.setStat(ZkTaskStatus.finish.name());
+					break;
+				}
+				if(!new File(task.getCmdPath()+File.separator+task.getTaskid()+".pid").exists()){
+					task.setLog(task.getCmdPath()+File.separator+task.getTaskid()+".pid"+" is not exist !!");
+					task.setStat(ZkTaskStatus.finish.name());
+					break;
+				}
 				try {
 					int stat=exe.cmdExec(task.getStopCmd(),null,new File(task.getCmdPath()),true);
 					if(stat==0){
@@ -224,13 +233,14 @@ public class ZkClientTask {
 						task.setStat(ZkTaskStatus.finish.name());
 
 					}else{
+						//if fail we should do something ,ex: record this and deal
 						task.setStat(ZkTaskStatus.fail.name());
 						clientLOG.info("PERFORME task id "+task.getTaskid()+" stop failed !!");
 					}
 
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
 					task.setStat(ZkTaskStatus.fail.name());
+					clientLOG.info("PERFORME task id "+task.getTaskid()+" stop failed !!");
 					task.setLog(e.getMessage());
 					e.printStackTrace();
 				}

@@ -1,5 +1,6 @@
 package com.stp.distribution.process;
 /**
+ * try to create processtask 
  * 
  * @author hhbhunter
  *
@@ -98,7 +99,8 @@ public class ProcessHandler implements Runnable {//Callable<String>
 						myTask=ProcessTaskOperate.getTaskByPath(controllTaskPath);
 					}catch(Exception e){
 						processLOG.error(" 【json】 formate is error ,please check !!! \n"+myTask.convertJson() );
-						//跳过错误id，处理
+						//跳过错误id，处理 
+						//jump the error id 
 						creatProcessTask(type,newIndex+1);
 					}
 					if(myTask==null || myTask.getStat().equals(ZkTaskStatus.stop.name())){

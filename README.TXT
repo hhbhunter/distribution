@@ -1,9 +1,9 @@
 
 本项目是基于zookeeper分布式执行调度：
-1、分为3个角色：client、control、manager
-2、client 负责命令执行
-3、control 任务中心，保证任务的有序性
-4、manager 管控中心，负责任务的管理分发
+1、分为3个角色：client、user、manager
+2、client 	负责命令执行
+3、user 		创建有序任务
+4、manager 	管控中心，负责任务的管理分发
 
 使用说明：
 1、zkclientconfig.properties 属性zkclient_role=client/manger 来启动不同角色
