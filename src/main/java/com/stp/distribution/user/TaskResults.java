@@ -39,7 +39,7 @@ public abstract class TaskResults {
 				Map<String,String> data=new HashMap<>();
 				if(ZkDataUtils.isExists(processPath)){
 					for(String client:task.getClient()){
-						data.put(ZKPaths.makePath(ZkTaskPath.getClientTaskPath(task.getType(), String.valueOf(task.getTaskid())), client), task.convertJson());
+						data.put(ZKPaths.makePath(ZkTaskPath.getClientTaskPath(task.getType(), client),  String.valueOf(task.getTaskid())), task.convertJson());
 					}
 					ZkDataUtils.transaction(data);
 				}
