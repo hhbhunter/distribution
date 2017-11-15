@@ -182,4 +182,18 @@ public class ZkDataUtils {
 		return transaction.and().commit();
 
 	}
+	public static  Collection<CuratorTransactionResult> updateTransaction(Map<String,String> data) throws Exception{
+		CuratorTransactionBridge transaction = null;
+		boolean flag=true;
+		for(Map.Entry<String,String> my: data.entrySet()){
+			if(flag){
+				transaction=zkTools.inTransaction().setData().forPath(my.getKey(),my.getValue().getBytes(ZKConfig.getZkCharset()));
+				flag=false;
+			}else{
+				transaction.and().setData().forPath(my.getKey(),my.getValue().getBytes(ZKConfig.getZkCharset()));
+			}
+		}
+		return transaction.and().commit();
+		
+	}
 }

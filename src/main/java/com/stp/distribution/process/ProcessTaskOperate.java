@@ -293,7 +293,7 @@ public class ProcessTaskOperate {
 	public static void main(String[] args) throws Exception {
 		ZKConfig.readConfig("src/main/resources/zkclientconfig.properties");
 		//		getTaskByPath("/stpclient/10.252.82.46/AUTO/4");
-		//		getTaskByPath("/stpprocess/AUTO/1");
+//				getTaskByPath("/stpprocess/AUTO/1");
 		System.out.println(ZkDataUtils.getData("/stpprocess/AUTO/1"));
 
 

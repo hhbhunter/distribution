@@ -7,14 +7,18 @@ package com.stp.distribution.user;
  */
 import org.apache.curator.framework.recipes.cache.NodeCache;
 import org.apache.curator.framework.recipes.cache.NodeCacheListener;
+import org.apache.curator.utils.ZKPaths;
 import org.apache.zookeeper.CreateMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.stp.distribution.entity.ProcessKey;
 import com.stp.distribution.entity.TaskType;
 import com.stp.distribution.entity.ZkTask;
+import com.stp.distribution.entity.ZkTaskStatus;
 import com.stp.distribution.framwork.ZkDataUtils;
 import com.stp.distribution.framwork.ZkTaskPath;
+import com.stp.distribution.process.ProcessTaskOperate;
 import com.stp.distribution.util.UtilTool;
 
 
@@ -28,7 +32,7 @@ public class TaskCreaterService {
 	// if you use it in web should init zkdatautil.class
 	public TaskCreaterService(TaskResults taskRes){
 		this.taskRes=taskRes;
-		synchronized (this) {
+		synchronized (TaskCreaterService.class) {
 			if(first){
 				init();//不推荐的方式
 				first=false;
@@ -57,6 +61,23 @@ public class TaskCreaterService {
 	public  void stopTask(int taskId){
 		if(TaskCache.taskCache.containsKey(taskId)){
 			taskOperat.stopTask(TaskCache.taskCache.get(taskId));
+		}else{
+			String procPath=ZKPaths.makePath(ZkTaskPath.getProcessPath(TaskType.PERFORME.name()),String.valueOf(taskId));
+			try {
+				if(ZkDataUtils.isExists(procPath)){
+					String contrPath=ZkDataUtils.getMapData(procPath).get(ProcessKey.SRC);
+					taskOperat.stopTask(ProcessTaskOperate.getTaskByPath(contrPath));
+				}else{
+					//not exist exe task  update status stop
+					ZkTask task=new ZkTask();
+					task.setTaskid(taskId);
+					task.setStat(ZkTaskStatus.stop.name());
+					taskRes.updateDB(task);
+				}
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 	
