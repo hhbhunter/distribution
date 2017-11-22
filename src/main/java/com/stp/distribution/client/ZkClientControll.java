@@ -1,7 +1,5 @@
 package com.stp.distribution.client;
-/**
- * @author hhbhunter
- */
+
 import java.util.List;
 import java.util.Map;
 
@@ -22,7 +20,11 @@ import com.stp.distribution.entity.ZkTask;
 import com.stp.distribution.framwork.ZkDataUtils;
 import com.stp.distribution.framwork.ZkTaskPath;
 import com.stp.distribution.util.UtilTool;
-
+/**
+ * 
+ * @author hhbhunter
+ *
+ */
 public class ZkClientControll {
 	private static final Logger clientLOG = LoggerFactory.getLogger(ZkClientControll.class);
 	private static CuratorFramework zkInstance = null;
@@ -31,9 +33,9 @@ public class ZkClientControll {
 
 	private static String myip=UtilTool.getLocalIp();
 
-	public static Map<Integer,ZkTask> autoMap=Maps.newConcurrentMap();
+	public static Map<String,ZkTask> autoMap=Maps.newConcurrentMap();
 
-	public static Map<Integer,ZkTask> performMap=Maps.newConcurrentMap();
+	public static Map<String,ZkTask> performMap=Maps.newConcurrentMap();
 
 	private ZkClientTask clientTaskExe;
 
@@ -69,12 +71,15 @@ public class ZkClientControll {
 	public ZkClientControll(CuratorFramework client, String clientPath){
 		myClientPath=clientPath;
 		zkInstance=client;
-		clientTaskExe=new ZkClientTask(zkInstance);
+		clientTaskExe=new ZkClientTask(zkInstance,myClientPath);
 		autoPath=ZKPaths.makePath(myClientPath, TaskType.AUTO.name());
 		performPath=ZKPaths.makePath(myClientPath, TaskType.PERFORME.name());
 		autoChildrenCache=new PathChildrenCache(client, autoPath, true);
 		performChildrenCache=new PathChildrenCache(client, performPath, true);
 
+	}
+	public ZkClientControll(CuratorFramework client){
+		this(client, ZkTaskPath.getClientPath(myip));
 	}
 
 	public void initClient(){
@@ -106,15 +111,13 @@ public class ZkClientControll {
 		
 	}
 	public boolean creatClientPath(){
-		System.out.println("create path=="+ZKPaths.makePath(myClientPath, TaskType.AUTO.name()));
-		clientLOG.debug("create path=="+ZKPaths.makePath(myClientPath, TaskType.AUTO.name()));
 		boolean flag=false;
 		try {
 			if(!ZkDataUtils.isExists(myClientPath)){
 				ZkDataUtils.createDataPath(myClientPath, "cli");
-				ZkDataUtils.createDataPath(ZKPaths.makePath(myClientPath, TaskType.AUTO.name()), "0");
-				ZkDataUtils.createDataPath(ZKPaths.makePath(myClientPath, TaskType.PERFORME.name()), "0");
-//				ZkDataUtils.createDataPath(ZKPaths.makePath(myClientPath, ZkTaskPath.NODE_THREAD),"0");
+				ZkDataUtils.createDataPath(autoPath, "0");
+				ZkDataUtils.createDataPath(performPath, "0");
+				ZkDataUtils.createDataPath(ZKPaths.makePath(myClientPath, "log"),"0");
 			}
 			if(!ZkDataUtils.isExists(myClientPath)){
 				clientLOG.error(myClientPath +" path create failed !!!");
@@ -167,7 +170,6 @@ public class ZkClientControll {
 				if(!ZkDataUtils.isExists(livePath)){
 					ZkDataUtils.createEPHEMERALDataPath(livePath, "0");
 				}
-				System.out.println("nodeChanged=="+liveNode.getCurrentData().getPath()+" stat=="+liveNode.getCurrentData().getStat());
 			}
 		};
 		liveNode.getListenable().addListener(nodeListener);

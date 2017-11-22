@@ -1,11 +1,8 @@
 package com.stp.distribution.client;
-/**
- * 
- * @author hhbhunter
- *
- */
+
 import java.io.File;
 import java.util.Map;
+import java.util.concurrent.FutureTask;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
@@ -14,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
+import com.stp.distribution.entity.LogEntity;
 import com.stp.distribution.entity.ProcessKey;
 import com.stp.distribution.entity.TaskType;
 import com.stp.distribution.entity.ZkTask;
@@ -25,23 +23,32 @@ import com.stp.distribution.framwork.ZkTaskPath;
 import com.stp.distribution.user.TaskCache;
 import com.stp.distribution.util.CmdExec;
 import com.stp.distribution.util.UtilTool;
-
+/**
+ * 
+ * @author hhbhunter
+ *
+ */
 public class ZkClientTask {
-	public static Map<Integer,CmdExec> exeMap=Maps.newConcurrentMap();
+	public static Map<String,TaskExceute> exeMap=Maps.newConcurrentMap();
 	private static final Logger clientLOG = LoggerFactory.getLogger(ZkClientTask.class);
 	CuratorFramework zkInstance;
-	public ZkClientTask(CuratorFramework zkInstance){
+	String myClientPath;
+	String myip=UtilTool.getLocalIp();
+	String myLogPath;
+	public ZkClientTask(CuratorFramework zkInstance,String myClientPath){
 		this.zkInstance=zkInstance;
+		this.myClientPath=myClientPath;
+		myLogPath=ZKPaths.makePath(myClientPath, "log");
 	}
 
-	public void taskProcess(PathChildrenCacheEvent event,Map<Integer,ZkTask> map,String myip) throws Exception{
+	public void taskProcess(PathChildrenCacheEvent event,Map<String,ZkTask> map,String myip) throws Exception{
 		ZkTask task = new ZkTask();
 		String dataPath = null;
 		try {
 			dataPath=event.getData().getPath();
-			clientLOG.debug("datapath="+dataPath);
+			clientLOG.info("datapath="+dataPath);
 			String taskjson=new String(event.getData().getData(),ZKConfig.getZkCharset());
-			clientLOG.debug("taskjson==="+taskjson);
+			clientLOG.info("taskjson==="+taskjson);
 			task = TaskCache.json2zktask(taskjson);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -79,7 +86,7 @@ public class ZkClientTask {
 	 * @throws Exception
 	 */
 	private void clientZkTaskEvent(ZkTask task) throws Exception {
-		String myip=UtilTool.getLocalIp();
+
 		String myProcessStatPath=ZKPaths.makePath(ZkTaskPath.getProcessPath(task.getType()), String.valueOf(task.getTaskid()));
 		clientLOG.info("myProcessStatPath="+myProcessStatPath+" stat="+task.getStat());
 
@@ -106,7 +113,6 @@ public class ZkClientTask {
 			//执行命令
 			ZkDataUtils.setKVData(myClientProcessPath, ProcessKey.STAT, ZkTaskStatus.running.name());
 			new TaskExceute(task).start();
-
 			break;
 		case stop:
 			new TaskExceute(task).start();
@@ -122,9 +128,13 @@ public class ZkClientTask {
 
 			ZkDataUtils.setKVData(myClientProcessPath, ProcessKey.STAT, ZkTaskStatus.finish.name());
 			String myTaskPath=ZKPaths.makePath(ZkTaskPath.getClientTaskPath(task.getType(), myip), String.valueOf(task.getTaskid()));
+			String myTaskLogPath=ZKPaths.makePath(myLogPath, String.valueOf(task.getTaskid()));
 			if(ZkDataUtils.isExists(myTaskPath)){
 				ZkDataUtils.removeDataPath(myTaskPath);
 				clientLOG.info("remove the path="+myTaskPath);
+			}
+			if(ZkDataUtils.isExists(myTaskLogPath)){
+				ZkDataUtils.removeDataPath(myTaskLogPath);//移除任务日志
 			}
 			break;
 		default:
@@ -137,7 +147,6 @@ public class ZkClientTask {
 		//		String clientPath=ZkTaskPath.getClientTaskPath(type, myip);
 		String registPath=ZKPaths.makePath(ZkTaskPath.getMonitorPath(type), myip);
 		String confPath=ZkTaskPath.getClientTaskPath(type, myip);
-		//		System.out.println("confpath count="+ZkDataUtils.getData(confPath));
 		String exenum=ZkDataUtils.getData(registPath);
 		System.out.println("current exeNum == "+exenum);
 		exenum=String.valueOf(Integer.valueOf(exenum)+num);
@@ -145,6 +154,18 @@ public class ZkClientTask {
 		ZkDataUtils.setData(registPath, exenum);
 		ZkDataUtils.setData(confPath, exenum);
 	}
+	public static void manualStop(String taskid){
+		ZkTask task=exeMap.get(taskid).task;
+		task.setStat(ZkTaskStatus.success.name());
+		try {
+			ZkDataUtils.setData(task.getZkpath(), task.convertJson());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		exeMap.get(taskid).stopTask();
+	}
+
 	/**
 	 * process更新任务状态，通知各个client
 	 * 只包含start、stop、finish
@@ -153,6 +174,7 @@ public class ZkClientTask {
 	 */
 
 	private class TaskExceute extends Thread{
+		boolean taskFinish=false;
 		ZkTask task;
 		CmdExec exe =new CmdExec();
 		public TaskExceute(ZkTask task) {
@@ -184,16 +206,33 @@ public class ZkClientTask {
 
 			clientLOG.info("Client start execute cmd="+task.getStartCmd()+" cmdPath="+task.getCmdPath());
 			try {
-				exeMap.put(task.getTaskid(), exe);
-				//				Thread.sleep(10000);
+				exeMap.put(task.getTaskid(), this);
+				FutureTask<LogEntity> futureTask = null;
+				switch (TaskType.valueOf(task.getType())) {
+				case PERFORME:
+					futureTask = exeLogListen();
+					new Thread(futureTask).start();
+					break;
+				default:
+					break;
+				}
 				int stat=exe.cmdExec(task.getStartCmd(),null,new File(task.getCmdPath()),true);
+				//外部stop
+				if(taskFinish){
+					clientLOG.info(task.getTaskid() + " is user stop !!");
+					return;
+				}
 				if(stat==0){
 					task.setStat(ZkTaskStatus.success.name());
-					
+
 				}else{
 					task.setStat(ZkTaskStatus.fail.name());
 
 				}
+				if(futureTask!=null && !futureTask.isDone()){
+					futureTask.cancel(true);
+				}
+
 
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -203,56 +242,75 @@ public class ZkClientTask {
 			}
 		}
 
-		public void stopTask() {
-			if(!exeMap.isEmpty()){
+		public FutureTask<LogEntity> exeLogListen(){
+			LogEntity logData =new LogEntity();
+			logData.setTaskId(task.getTaskid());
+			logData.setPath(task.getCmdPath()+"/log/"+task.getTaskid()+".log");
+			String myTaskLogPath=ZKPaths.makePath(myLogPath, String.valueOf(task.getTaskid()));
+			ZkClientLog cliLog=new ZkClientLog(logData,exe,myTaskLogPath);
+			FutureTask<LogEntity> futureTask = new FutureTask<LogEntity>(cliLog);
+			return futureTask;
+		}
 
-				CmdExec exe=exeMap.get(task.getTaskid());
-				if(exe!=null)
-					exe.stop();
-			}
-			
+		public void stopTask() {
+
 			switch (TaskType.valueOf(task.getType())) {
 			case AUTO:
 				task.setStat(ZkTaskStatus.finish.name());
 				break;
 			case PERFORME:
+				if(exeMap.containsKey(task.getTaskid())){
+					exeMap.get(task.getTaskid()).taskFinish=true;
+				}
 				if(!new File(task.getCmdPath()).exists()){
 					task.setLog(task.getCmdPath()+" is not exist !!");
+					clientLOG.info(task.getCmdPath()+" is not exist !!");
 					task.setStat(ZkTaskStatus.finish.name());
 					break;
 				}
 				if(!new File(task.getCmdPath()+File.separator+task.getTaskid()+".pid").exists()){
 					task.setLog(task.getCmdPath()+File.separator+task.getTaskid()+".pid"+" is not exist !!");
+					clientLOG.info(task.getCmdPath()+File.separator+task.getTaskid()+".pid"+" is not exist !!");
 					task.setStat(ZkTaskStatus.finish.name());
 					break;
 				}
 				try {
-					int stat=exe.cmdExec(task.getStopCmd(),null,new File(task.getCmdPath()),true);
+					int stat=-1;
+					if(task.getStopCmd().contains("|")){
+						stat=exe.cmdExec(new String[]{"sh","-c",task.getStopCmd()},null,new File(task.getCmdPath()),true);
+					}else{
+						stat=exe.cmdExec(task.getStopCmd(),null,new File(task.getCmdPath()),true);
+					}
 					if(stat==0){
 						clientLOG.info("PERFORME task id "+task.getTaskid()+" stop ok !!");
 						task.setStat(ZkTaskStatus.finish.name());
 
 					}else{
-						//if fail we should do something ,ex: record this and deal
-						task.setStat(ZkTaskStatus.fail.name());
-						clientLOG.info("PERFORME task id "+task.getTaskid()+" stop failed !!");
+						clientLOG.error("PERFORME task id "+task.getTaskid()+" stop failed !!");
+						task.setStat(ZkTaskStatus.pending.name());
+						System.out.println("===="+exe.getTmpErrInfo());
+						task.setLog(exe.getErrorInf());
 					}
 
 				} catch (Exception e) {
-					task.setStat(ZkTaskStatus.fail.name());
-					clientLOG.info("PERFORME task id "+task.getTaskid()+" stop failed !!");
+					// TODO Auto-generated catch block
+					task.setStat(ZkTaskStatus.finish.name());
 					task.setLog(e.getMessage());
 					e.printStackTrace();
 				}
-
 				break;
 
 			default:
 				break;
 			}
+			if(!exeMap.isEmpty()){
+
+				CmdExec exe=exeMap.get(task.getTaskid()).exe;
+				if(exe!=null)
+					exe.stop();
+			}
 		}
 
 	}
-
 
 }

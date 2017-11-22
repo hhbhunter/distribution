@@ -5,23 +5,16 @@ package com.stp.distribution.client;
 
 import com.stp.distribution.framwork.ZKConfig;
 import com.stp.distribution.framwork.ZkDataUtils;
-import com.stp.distribution.framwork.ZkTaskPath;
 import com.stp.distribution.manager.ZkTaskManager;
-import com.stp.distribution.util.UtilTool;
 
 public class ClientStart {
-	private static void init(String myclientpath){
-		
-		ZkClientControll zkcli=new ZkClientControll(ZkDataUtils.getZKinstance(), myclientpath);
+	
+	private static void startClient(){
+		ZkClientControll zkcli=new ZkClientControll(ZkDataUtils.getZKinstance());
 		zkcli.initClient();
 	}
 	
-	private static void startClient(){
-		String myclientpath=ZkTaskPath.getClientPath(UtilTool.getLocalIp());
-		init(myclientpath);
-	}
-	
-	private static void startManager(){
+	private static void startControll(){
 		ZkTaskManager taskManager=new ZkTaskManager();
 		taskManager.initAll();
 		taskManager.startTaskExecute();
@@ -31,7 +24,7 @@ public class ClientStart {
 		if(ZKConfig.getRole().equalsIgnoreCase("client")){
 			startClient();
 		}else{
-			startManager();
+			startControll();
 		}
 		
 		while(true){
