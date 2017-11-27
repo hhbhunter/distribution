@@ -9,11 +9,7 @@ import java.util.concurrent.Callable;
 import com.stp.distribution.entity.LogEntity;
 import com.stp.distribution.framwork.ZkDataUtils;
 import com.stp.distribution.util.CmdExec;
-/**
- * 
- * @author hhbhunter
- *
- */
+
 public class ZkClientLog implements Callable<LogEntity>{
 	private static FileReader in = null;
 	private static LineNumberReader reader = null;

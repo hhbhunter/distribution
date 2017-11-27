@@ -1,22 +1,21 @@
 package com.stp.distribution.user;
-/**
- * 
- * @author hhbhunter
- *
- */
+
 import java.util.concurrent.Executor;
 
 import org.apache.curator.utils.ZKPaths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import com.stp.distribution.entity.ZkTask;
 import com.stp.distribution.entity.ZkTaskStatus;
 import com.stp.distribution.framwork.IZkTaskOperat;
 import com.stp.distribution.framwork.ZkDataUtils;
 import com.stp.distribution.framwork.ZkException;
 import com.stp.distribution.framwork.ZkTaskPath;
-
+/**
+ * 
+ * @author hhbhunter
+ *
+ */
 public class ZkTaskOperatImp implements IZkTaskOperat,Runnable {
 
 	private static final Logger taskOpLOG = LoggerFactory.getLogger(ZkTaskOperatImp.class);

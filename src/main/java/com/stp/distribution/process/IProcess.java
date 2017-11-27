@@ -1,14 +1,14 @@
 package com.stp.distribution.process;
+
+import java.util.Map;
+
+import com.stp.distribution.entity.ZkTask;
+import com.stp.distribution.entity.ZkTaskStatus;
 /**
  * 
  * @author hhbhunter
  *
  */
-import java.util.Map;
-
-import com.stp.distribution.entity.ZkTask;
-import com.stp.distribution.entity.ZkTaskStatus;
-
 public interface IProcess {
 	
 	void createNodeData(Map<String,String> data,ZkTask task);

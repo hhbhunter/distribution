@@ -1,10 +1,5 @@
 package com.stp.distribution.process;
-/**
- * try to create processtask 
- * 
- * @author hhbhunter
- *
- */
+
 import org.apache.curator.utils.ZKPaths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +9,11 @@ import com.stp.distribution.entity.ZkTaskStatus;
 import com.stp.distribution.framwork.ZkDataUtils;
 import com.stp.distribution.framwork.ZkTaskPath;
 import com.stp.distribution.manager.ZkRegistMonitor;
-
+/**
+ * 
+ * @author hhbhunter
+ *
+ */
 
 
 public class ProcessHandler implements Runnable {//Callable<String>
@@ -36,7 +35,7 @@ public class ProcessHandler implements Runnable {//Callable<String>
 
 			while( !checkCurrentIndex(processTaskHandler())){
 				try {
-					Thread.sleep(2000);
+					Thread.sleep(1000);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 				}
@@ -89,7 +88,6 @@ public class ProcessHandler implements Runnable {//Callable<String>
 		processLOG.debug(type + " new processTask==="+newTaskPath);
 
 		try {
-			if(!ZkDataUtils.isExists(newTaskPath)){
 
 				String controllTaskPath=ZKPaths.makePath(ZkTaskPath.getControllPath(type),newTaskPath);
 				if(ZkDataUtils.isExists(controllTaskPath)){
@@ -99,8 +97,7 @@ public class ProcessHandler implements Runnable {//Callable<String>
 						myTask=ProcessTaskOperate.getTaskByPath(controllTaskPath);
 					}catch(Exception e){
 						processLOG.error(" 【json】 formate is error ,please check !!! \n"+myTask.convertJson() );
-						//跳过错误id，处理 
-						//jump the error id 
+						//跳过错误id，处理
 						creatProcessTask(type,newIndex+1);
 					}
 					if(myTask==null || myTask.getStat().equals(ZkTaskStatus.stop.name())){
@@ -117,11 +114,8 @@ public class ProcessHandler implements Runnable {//Callable<String>
 				}else{
 					
 					processLOG.error(controllTaskPath +" is not exist !!!");
-					Thread.sleep(1000);
+					Thread.sleep(4000);
 				}
-			}else{
-//				processLOG.info(type + " current processTask==="+newTaskPath);
-			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

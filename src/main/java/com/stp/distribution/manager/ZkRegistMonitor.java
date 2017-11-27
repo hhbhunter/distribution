@@ -1,9 +1,5 @@
 package com.stp.distribution.manager;
-/**
- * 
- * @author hhbhunter
- *
- */
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +14,11 @@ import com.google.common.collect.Maps;
 import com.stp.distribution.framwork.ZKConfig;
 import com.stp.distribution.framwork.ZkDataUtils;
 import com.stp.distribution.framwork.ZkTaskPath;
-
+/**
+ * 
+ * @author hhbhunter
+ *
+ */
 public class ZkRegistMonitor {
 	private Map<String,Integer> registCache=Maps.newConcurrentMap();
 	private CuratorFramework zkinstance;

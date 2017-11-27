@@ -1,5 +1,4 @@
 package com.stp.distribution.manager;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
@@ -20,13 +19,14 @@ import com.stp.distribution.process.ProcessHandler;
 import com.stp.distribution.process.ProcessService;
 import com.stp.distribution.process.ProcessTaskListen;
 import com.stp.distribution.user.TaskCache;
-
+import com.stp.distribution.user.ZkTaskControll;
 
 /**
- * controll task 
+ * 
  * @author hhbhunter
  *
  */
+//controll task 
 public class ZkTaskManager {
 	private static final Logger managerLOG = LoggerFactory.getLogger(ZkTaskManager.class);
 
@@ -49,6 +49,7 @@ public class ZkTaskManager {
 		try {
 			ZkTaskPath.initOrgPath();
 		} catch (Exception e) {
+			// TODO Auto-generated catch block
 			managerLOG.error(e.getMessage());
 			e.printStackTrace();
 		}
@@ -61,6 +62,7 @@ public class ZkTaskManager {
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
 			}
 		}
 		try {
@@ -68,10 +70,10 @@ public class ZkTaskManager {
 			new Thread(new ProcessHandler(autoClientsMonitor,TaskType.AUTO.name())).start();
 			new Thread(new ProcessHandler(performClientsMonitor,TaskType.PERFORME.name())).start();
 		} catch (Exception e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-
 
 
 	void initRegistMonitor(){
@@ -134,17 +136,17 @@ public class ZkTaskManager {
 		}
 		return false;
 	}
-	public static boolean reduceClient2task(ZkTask zktask){
+	public static void reduceClient2task(ZkTask zktask){
 		for(String client:zktask.getClient())
 			switch (TaskType.valueOf(zktask.getType())) {
 			case AUTO:
 				autoClientsMonitor.getRegistCache().remove(client);
-				return true;
+				break;
 			case PERFORME:
 				performClientsMonitor.getRegistCache().remove(client);
+				
 				break;
 			}
-		return false;
 	}
 
 	public static void initProcessTaskListen() throws Exception{
@@ -159,8 +161,7 @@ public class ZkTaskManager {
 		for(String taskid:clidrens){
 			ProcessTaskListen processTaskListen=new ProcessTaskListen(zkInstance);
 			processTaskListen.startProcessTaskListen(taskid,type);
-			ProcessService.taskListen.put(Integer.parseInt(taskid), processTaskListen);
-
+			ProcessService.taskListen.put(taskid, processTaskListen);
 		}
 		Thread.sleep(1000);
 	}

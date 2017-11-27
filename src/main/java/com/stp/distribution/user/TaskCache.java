@@ -13,11 +13,11 @@ import com.google.common.collect.Maps;
 import com.stp.distribution.entity.ZkTask;
 
 public class TaskCache {
-	public static Map<Integer,ZkTask> taskCache=Maps.newConcurrentMap();
+	public static Map<String,ZkTask> taskCache=Maps.newConcurrentMap();
 	public static LinkedBlockingQueue<ZkTask> TASKQUEUE=new LinkedBlockingQueue<ZkTask>();
-	public static Map<Integer,ZkTask> stopCache=Maps.newConcurrentMap();
+	public static Map<String,ZkTask> stopCache=Maps.newConcurrentMap();
 	
-	public static ZkTask getTask(int taskid){
+	public static ZkTask getTask(String taskid){
 		return taskCache.get(taskid);
 	}
 
@@ -36,7 +36,7 @@ public class TaskCache {
 		
 	}
 
-	public static void delTask(int taskid){
+	public static void delTask(String taskid){
 		taskCache.remove(taskid);
 	}
 

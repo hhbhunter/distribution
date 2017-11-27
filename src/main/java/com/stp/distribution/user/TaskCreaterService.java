@@ -5,6 +5,10 @@ package com.stp.distribution.user;
  * 提供addTask、stopTask
  *
  */
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.curator.framework.recipes.cache.NodeCache;
 import org.apache.curator.framework.recipes.cache.NodeCacheListener;
 import org.apache.curator.utils.ZKPaths;
@@ -58,27 +62,69 @@ public class TaskCreaterService {
 		taskOperat.addTask(task);
 	}
 	
-	public  void stopTask(int taskId){
+	public  void stopTask(String taskId){
+		ZkTask task=getExeTask(taskId);
+		if(task!=null){
+			taskOperat.stopTask(task);
+		}else{
+			//not exist exe task  update status stop
+			task=new ZkTask();
+			task.setTaskid(taskId);
+			task.setType(TaskType.PERFORME.name());
+			task.setStat(ZkTaskStatus.stop.name());
+			taskRes.updateDB(task);
+		}
+	}
+	/**
+	 * 获取已注册client集合
+	 * @param type
+	 * @return
+	 * @throws Exception
+	 */
+	public List<String> getClients(String type) throws Exception{
+		return ZkDataUtils.getChildren(ZkTaskPath.getMonitorPath(type));
+	}
+	/**
+	 * return clientip and tasklog
+	 * @param taskId
+	 * @return Map
+	 */
+	public Map<String,String> getTaskLog(String taskId){
+		Map<String,String> logs=new HashMap<String,String>();
+		ZkTask task=getExeTask(taskId);
+		if(task!=null&&task.getType().equals(TaskType.PERFORME.name())){
+			for(String client:task.getClient()){
+				String logPath=ZKPaths.makePath(ZkTaskPath.getClientPath(client),"log");
+				String taskLog=ZKPaths.makePath(logPath, taskId);
+				try {
+					if(ZkDataUtils.isExists(taskLog)){
+						logs.put(client, ZkDataUtils.getData(taskLog));
+					}
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+		return logs;
+	}
+	private ZkTask getExeTask(String taskId){
+		ZkTask task=null;
 		if(TaskCache.taskCache.containsKey(taskId)){
-			taskOperat.stopTask(TaskCache.taskCache.get(taskId));
+			task=TaskCache.taskCache.get(taskId);
 		}else{
 			String procPath=ZKPaths.makePath(ZkTaskPath.getProcessPath(TaskType.PERFORME.name()),String.valueOf(taskId));
 			try {
 				if(ZkDataUtils.isExists(procPath)){
 					String contrPath=ZkDataUtils.getMapData(procPath).get(ProcessKey.SRC);
-					taskOperat.stopTask(ProcessTaskOperate.getTaskByPath(contrPath));
-				}else{
-					//not exist exe task  update status stop
-					ZkTask task=new ZkTask();
-					task.setTaskid(taskId);
-					task.setStat(ZkTaskStatus.stop.name());
-					taskRes.updateDB(task);
+					task=ProcessTaskOperate.getTaskByPath(contrPath);
 				}
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
+		return task;
 	}
 	
 	private  void initTaskResource(){

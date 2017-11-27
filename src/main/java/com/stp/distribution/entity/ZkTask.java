@@ -1,8 +1,6 @@
 package com.stp.distribution.entity;
 /**
- * 
  * @author hhbhunter
- *
  */
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +10,7 @@ public class ZkTask{
 	
 	
 	public String type="";
-	public int taskid=-1;
+	public String taskid="-1";
 	public String startCmd="";
 	public String stopCmd="";
 	public String cmdPath="";
@@ -21,8 +19,7 @@ public class ZkTask{
 	public String zkpath="";
 	public int exeNum=1;
 	public String log="";
-	
-	
+
 	public String getLog() {
 		return log;
 	}
@@ -75,7 +72,7 @@ public class ZkTask{
 		return type;
 	}
 
-	public int getTaskid() {
+	public String getTaskid() {
 		return taskid;
 	}
 
@@ -95,7 +92,7 @@ public class ZkTask{
 		this.type = type;
 	}
 
-	public void setTaskid(int taskid) {
+	public void setTaskid(String taskid) {
 		this.taskid = taskid;
 	}
 

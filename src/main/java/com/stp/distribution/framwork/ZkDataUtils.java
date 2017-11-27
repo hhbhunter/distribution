@@ -1,9 +1,5 @@
 package com.stp.distribution.framwork;
-/**
- * 
- * @author hhbhunter
- *
- */
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -20,28 +16,32 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.stp.distribution.util.StringUtils;
-
+/**
+ * 
+ * @author hhbhunter
+ *
+ */
 
 public class ZkDataUtils {
 	private static Logger log = LoggerFactory.getLogger(ZkDataUtils.class);
 	private static CuratorFramework zkTools;
 
 	static {
-		try {
-			
-			zkTools = ZKinstance.getZKInstance();
-			zkTools.getConnectionStateListenable().addListener(new ConnectionStateListener() {
+			try {
+				zkTools = ZKinstance.getZKInstance();
+				zkTools.getConnectionStateListenable().addListener(new ConnectionStateListener() {
 
-				@Override
-				public void stateChanged(CuratorFramework client, ConnectionState newState) {
-					log.info("Manager ZKinstance connection state changed to " + newState.toString());
-				}
-			});
-			zkTools.start();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+					@Override
+					public void stateChanged(CuratorFramework client, ConnectionState newState) {
+						log.info("Manager ZKinstance connection state changed to " + newState.toString());
+					}
+				});
+				zkTools.start();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 	}
+	
 	public static void setZKinstance(CuratorFramework client){
 		zkTools=client;
 	}
@@ -119,7 +119,7 @@ public class ZkDataUtils {
 
 	public static String getData(final String path) throws Exception {
 		String data = new String(zkTools.getData().forPath(path), ZKConfig.getZkCharset());
-//		log.info("-----Get Data. path:[" + path + "] data:[" + data + "]-----");
+		//		log.info("-----Get Data. path:[" + path + "] data:[" + data + "]-----");
 		return data;
 	}
 
@@ -130,7 +130,7 @@ public class ZkDataUtils {
 	}
 
 	public static void removeDataPath(final String path) throws Exception {
-//		log.info("-----Remove Node. path:[" + path + "]-----");
+		//		log.info("-----Remove Node. path:[" + path + "]-----");
 		zkTools.delete().forPath(path);
 	}
 
@@ -180,7 +180,7 @@ public class ZkDataUtils {
 			}
 		}
 		return transaction.and().commit();
-
+		
 	}
 	public static  Collection<CuratorTransactionResult> updateTransaction(Map<String,String> data) throws Exception{
 		CuratorTransactionBridge transaction = null;

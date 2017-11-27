@@ -1,9 +1,5 @@
 package com.stp.distribution.framwork;
-/**
- * 
- * @author hhbhunter
- *
- */
+
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.RetryNTimes;
@@ -11,7 +7,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.stp.distribution.util.StringUtils;
-
+/**
+ * 
+ * @author hhbhunter
+ *
+ */
 public class ZKinstance {
 private static Logger log = LoggerFactory.getLogger(ZKinstance.class);
 	

@@ -1,9 +1,5 @@
 package com.stp.distribution.process;
-/**
- * 
- * @author hhbhunter
- *
- */
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -24,7 +20,11 @@ import com.stp.distribution.manager.ZkRegistMonitor;
 import com.stp.distribution.manager.ZkTaskDistribution;
 import com.stp.distribution.manager.ZkTaskManager;
 import com.stp.distribution.util.StringUtils;
-
+/**
+ * 
+ * @author hhbhunter
+ *
+ */
 public class ProcessTaskOperate {
 	private static final Logger processLOG = LoggerFactory.getLogger(ProcessTaskOperate.class);
 	
@@ -75,6 +75,7 @@ public class ProcessTaskOperate {
 			}
 
 			break;
+		case pending:
 		case fail:
 
 			opfailTask(data, task);
@@ -134,7 +135,7 @@ public class ProcessTaskOperate {
 		if(ZkDataUtils.isExists(processPath)){
 			processLOG.error("process "+task.getType()+" taskid = "+task.getTaskid()+" is exists !!");
 			// 当前会跳过已存在任务，往下执行，有可能产生僵尸任务
-			zombieTask(task,processPath);
+						zombieTask(task,processPath);
 			return false;
 		}
 		if(!ZkTaskManager.choiceClient2task(task)){
@@ -174,7 +175,7 @@ public class ProcessTaskOperate {
 	 * @return
 	 */
 	public static boolean checkClientConf(String client,String type){
-		int conf=-1;
+		int conf=9999;//不存在client情况
 		processLOG.info("process get client path = "+ZkTaskPath.getClientTaskPath(type, client));
 		try {
 			conf=Integer.valueOf(new String(ZkDataUtils.getData(ZkTaskPath.getClientTaskPath(type, client))));
@@ -289,13 +290,5 @@ public class ProcessTaskOperate {
 	}
 	public static boolean choiceClient2task(ZkTask zktask,ZkRegistMonitor registMonitor){
 		return ZkTaskDistribution.choiceClient2task(zktask,registMonitor);
-	}
-	public static void main(String[] args) throws Exception {
-		ZKConfig.readConfig("src/main/resources/zkclientconfig.properties");
-		//		getTaskByPath("/stpclient/10.252.82.46/AUTO/4");
-//				getTaskByPath("/stpprocess/AUTO/1");
-		System.out.println(ZkDataUtils.getData("/stpprocess/AUTO/1"));
-
-
 	}
 }

@@ -20,11 +20,7 @@ import com.stp.distribution.entity.ZkTask;
 import com.stp.distribution.framwork.ZkDataUtils;
 import com.stp.distribution.framwork.ZkTaskPath;
 import com.stp.distribution.util.UtilTool;
-/**
- * 
- * @author hhbhunter
- *
- */
+
 public class ZkClientControll {
 	private static final Logger clientLOG = LoggerFactory.getLogger(ZkClientControll.class);
 	private static CuratorFramework zkInstance = null;

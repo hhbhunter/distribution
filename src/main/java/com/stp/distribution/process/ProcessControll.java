@@ -1,16 +1,16 @@
 package com.stp.distribution.process;
-/**
- * 
- * @author hhbhunter
- *
- */
+
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 
 import com.stp.distribution.framwork.ZkTaskPath;
-
+/**
+ * 
+ * @author hhbhunter
+ *
+ */
 public class ProcessControll {
 	//auto & perform
 	//task index

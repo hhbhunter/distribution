@@ -1,9 +1,5 @@
 package com.stp.distribution.process;
-/**
- * 
- * @author hhbhunter
- *
- */
+
 import java.io.IOException;
 
 import org.apache.curator.framework.CuratorFramework;
@@ -17,7 +13,11 @@ import org.slf4j.LoggerFactory;
 import com.stp.distribution.entity.ProcessKey;
 import com.stp.distribution.framwork.ZkDataUtils;
 import com.stp.distribution.framwork.ZkTaskPath;
-
+/**
+ * 
+ * @author hhbhunter
+ *
+ */
 public class ProcessTaskListen {
 	private static final Logger processLOG = LoggerFactory.getLogger(ProcessTaskListen.class);
 	public static boolean stat=true;

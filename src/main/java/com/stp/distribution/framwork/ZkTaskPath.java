@@ -1,14 +1,12 @@
 package com.stp.distribution.framwork;
+
+import org.apache.curator.utils.ZKPaths;
+import com.stp.distribution.entity.TaskType;
 /**
  * 
  * @author hhbhunter
  *
  */
-import org.apache.curator.utils.ZKPaths;
-import org.apache.zookeeper.CreateMode;
-
-import com.stp.distribution.entity.TaskType;
-
 public class ZkTaskPath {
 
 	public static String TASK_PATH="task";

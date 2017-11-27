@@ -1,9 +1,5 @@
 package com.stp.distribution.process;
-/**
- * 
- * @author hhbhunter
- *
- */
+
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -23,15 +19,18 @@ import com.stp.distribution.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
+/**
+ * 
+ * @author hhbhunter
+ *
+ */
 public class ProcessService implements IProcess{
 
 	private static final Logger processLOG = LoggerFactory.getLogger(ProcessService.class);
 	private final static String INDEX_PATH=ZkTaskPath.INDEX_PATH;
-	public static Map<Integer,ProcessTaskListen> taskListen=Maps.newConcurrentMap();
-	public static Map<Integer,ZkTaskStatus> taskStats=Maps.newConcurrentMap();
+	public static Map<String,ProcessTaskListen> taskListen=Maps.newConcurrentMap();
+	public static Map<String,ZkTaskStatus> taskStats=Maps.newConcurrentMap();
 
-	public static AtomicInteger num=new AtomicInteger(0);
 	@Override
 	public void createNodeData(Map<String, String> data,ZkTask task) {
 		// TODO Auto-generated method stub
@@ -98,7 +97,6 @@ public class ProcessService implements IProcess{
 			currentIndex=ZkDataUtils.getKVData(indexPath, INDEX_PATH);
 			processLOG.info("process 节点新增 :"+dataPath+" 当前index:"+currentIndex);
 			dataMap=StringUtils.getStrMapByJSON(json);
-			System.out.println(dataMap);
 			myTask=ProcessTaskOperate.getTaskByPath(dataMap.get(ProcessKey.SRC));
 			processLOG.debug("process task===\n"+myTask.convertJson());
 
@@ -110,7 +108,7 @@ public class ProcessService implements IProcess{
 			}else if(ProcessTaskOperate.currVsNewIndex(currentIndex,ZKPaths.getNodeFromPath(dataMap.get(ProcessKey.SRC)),type)){
 				ZkDataUtils.setKVData(indexPath, INDEX_PATH, ZKPaths.getNodeFromPath(dataMap.get(ProcessKey.SRC)));//更新最新任务编号
 
-			};
+			}
 			if(taskListen.containsKey(myTask.getTaskid())){
 
 				processLOG.error(myTask.getTaskid() +" is running please waiting !!!");
@@ -131,7 +129,7 @@ public class ProcessService implements IProcess{
 				e.printStackTrace();
 				//当前会直接跳过已存在任务id，避免同一个任务在执行期内重复提交
 				collectStat(dataMap,myTask);
-				updateNodeData(dataMap,myTask,taskStats.get(Integer.valueOf(taskid)));
+				updateNodeData(dataMap,myTask,taskStats.get(taskid));
 
 			}
 			processLOG.debug(" update currentIndex == "+ZkDataUtils.getKVData(indexPath, INDEX_PATH));
@@ -144,21 +142,21 @@ public class ProcessService implements IProcess{
 			}
 			// 任务状态变更
 			dataMap=StringUtils.getStrMapByJSON(json);
-			System.out.println("CHILD_UPDATED:"+dataMap);
 			myTask=ProcessTaskOperate.getTaskByPath(dataMap.get(ProcessKey.SRC));
 			collectStat(dataMap,myTask);
 
 			//process去删除client任务，而不update数据（没有考虑分布式锁的问题）
-			updateNodeData(dataMap,myTask,taskStats.get(Integer.valueOf(taskid)));
+			updateNodeData(dataMap,myTask,taskStats.get(taskid));
 
 			break;
 		case CHILD_REMOVED:
 			//任务移除监听，拿最新任务尝试创建
 			//此处是否删除control task_sequ
 			processLOG.info("process  CHILD_REMOVED taskPath == "+dataPath);
-			taskListen.get(Integer.valueOf(taskid)).closeProcessTaskListen();
-			taskStats.remove(Integer.valueOf(taskid));//删除任务状态
-			taskListen.remove(Integer.valueOf(taskid));
+			if(taskListen.containsKey(taskid))
+			taskListen.get(taskid).closeProcessTaskListen();
+			taskStats.remove(taskid);//删除任务状态
+			taskListen.remove(taskid);
 			dataMap=StringUtils.getStrMapByJSON(json);
 			myTask=ProcessTaskOperate.getTaskByPath(dataMap.get(ProcessKey.SRC));
 			myTask.setStat(ZkTaskStatus.finish.name());
@@ -208,7 +206,7 @@ public class ProcessService implements IProcess{
 		}
 		return flag;
 	}
-	public static boolean creatTask(String controllTaskPath){
+	/*public static boolean creatTask(String controllTaskPath){
 		boolean flag=false;
 		try {
 			if(ZkDataUtils.isExists(controllTaskPath)){
@@ -240,29 +238,7 @@ public class ProcessService implements IProcess{
 			e.printStackTrace();
 		}
 		return flag;
-	}
+	}*/
 
-	public static void main(String[] args) {
-		boolean f=false;
-
-		for(int i=0;i<10;i++){
-			ZkTaskStatus stat=ZkTaskStatus.valueOf("success");
-			switch (stat) {
-			case success:
-				f=true;
-				break;
-
-			default:
-				System.out.println(stat);
-				break;
-			}
-			if(!f) break;
-		}
-		String a="auto0001";
-		String b="auto0002";
-		System.out.println(Long.valueOf(a.substring("auto".length()))>Long.valueOf(b.substring("auto".length())));
-		System.out.println(b.substring("auto".length()));
-
-	}
 
 }

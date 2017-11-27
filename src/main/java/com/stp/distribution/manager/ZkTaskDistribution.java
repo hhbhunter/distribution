@@ -1,9 +1,5 @@
 package com.stp.distribution.manager;
-/**
- * 
- * @author hhbhunter
- *
- */
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,7 +16,11 @@ import com.stp.distribution.framwork.ZKConfig;
 import com.stp.distribution.framwork.ZkDataUtils;
 import com.stp.distribution.framwork.ZkException;
 import com.stp.distribution.framwork.ZkTaskPath;
-
+/**
+ * 
+ * @author hhbhunter
+ *
+ */
 public class ZkTaskDistribution {
 
 	private static final Logger distrubtLOG = LoggerFactory.getLogger(ZkTaskDistribution.class);
@@ -77,51 +77,71 @@ public class ZkTaskDistribution {
 			for(CuratorTransactionResult res:ZkDataUtils.transaction(clientData)){
 				System.out.println("事务提交结果："+res.getType());
 			}
-			
+
 		}
-		
+
 		//		ZkDataUtils.transaction(clientData);
 	}
 
 
 
 	public static boolean choiceClient2task(ZkTask zktask,ZkRegistMonitor registClient){
-		
+		int num=zktask.getExeNum();
 		boolean flag=false;
 		if(registClient==null) return flag;
 		//如果已经分配不再处理
-		if(zktask.getClient().size()>0) return true;
-		List<String> clients=new ArrayList<>();
-		synchronized (registClient) {
-			int num=zktask.getExeNum();
-			distrubtLOG.info("choice "+zktask.getType()+" taskid = "+zktask.getTaskid()+" is exeClient num = "+num);
+		if(!zktask.getClient().equals(null) && zktask.getClient().size()>0 && zktask.getClient().size()==num){
+			for(String client:zktask.getClient()){
+				if(registClient.getRegistCache().containsKey(client)){
 
-			for(Map.Entry<String, Integer> client:registClient.getRegistCache().entrySet()){
-				if(client.getValue()<Integer.valueOf(ZKConfig.getClientExeNum())){
-					clients.add(client.getKey());
-					num--;
-				}
-				if(num==0){
-					zktask.setClient(clients);
-					try {
-						ZkDataUtils.setData(zktask.getZkpath(), zktask.convertJson());
-						flag=true;
-						registClient.updateRegistCache(clients, 1);
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+					if(registClient.getRegistCache().get(client)<Integer.valueOf(ZKConfig.getClientExeNum())){
+						num--;
 					}
-
-					break;
-				}else{
-					registClient.updateRegistCache(clients, -1);
-					distrubtLOG.error("fail choice "+zktask.getType()+" taskid = "+zktask.getTaskid()+" is exeClient num = "+num);
 				}
 			}
+			if(num==0){
+				registClient.updateRegistCache(zktask.getClient(), 1);
+				flag=true;
+			}
+		}else{
+			//不符合实际ip数量，将自动分配
+			num=zktask.getExeNum();
+			List<String> clients=new ArrayList<>();
+			synchronized (registClient) {//目前实现方式可以不加锁
+
+				distrubtLOG.info("choice "+zktask.getType()+" taskid = "+zktask.getTaskid()+" is exeClient num = "+num);
+				Map<String,Integer> clietMap=registClient.getRegistCache();
+				for(String client:clietMap.keySet()){
+					if(clietMap.get(client)<Integer.valueOf(ZKConfig.getClientExeNum())){
+
+					}
+				}
+				for(Map.Entry<String, Integer> client:registClient.getRegistCache().entrySet()){
+					if(client.getValue()<Integer.valueOf(ZKConfig.getClientExeNum())){
+						clients.add(client.getKey());
+						num--;
+					}
+					if(num==0){
+						zktask.setClient(clients);
+						try {
+							ZkDataUtils.setData(zktask.getZkpath(), zktask.convertJson());
+							flag=true;
+							registClient.updateRegistCache(clients, 1);
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+
+						break;
+					}else{
+						registClient.updateRegistCache(clients, -1);
+						distrubtLOG.error("fail choice "+zktask.getType()+" taskid = "+zktask.getTaskid()+" is exeClient num = "+num);
+					}
+				}
 
 
+			}
 		}
-
 		return flag;
 	}
 

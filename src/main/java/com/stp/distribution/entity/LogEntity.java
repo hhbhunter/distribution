@@ -1,9 +1,5 @@
 package com.stp.distribution.entity;
-/**
- * 
- * @author hhbhunter
- *
- */
+
 public class LogEntity {
 	String path;
 	String content;

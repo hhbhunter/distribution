@@ -23,11 +23,7 @@ import com.stp.distribution.framwork.ZkTaskPath;
 import com.stp.distribution.user.TaskCache;
 import com.stp.distribution.util.CmdExec;
 import com.stp.distribution.util.UtilTool;
-/**
- * 
- * @author hhbhunter
- *
- */
+
 public class ZkClientTask {
 	public static Map<String,TaskExceute> exeMap=Maps.newConcurrentMap();
 	private static final Logger clientLOG = LoggerFactory.getLogger(ZkClientTask.class);
@@ -208,9 +204,11 @@ public class ZkClientTask {
 			try {
 				exeMap.put(task.getTaskid(), this);
 				FutureTask<LogEntity> futureTask = null;
+				ZkClientLog clilog=null;
 				switch (TaskType.valueOf(task.getType())) {
 				case PERFORME:
-					futureTask = exeLogListen();
+					clilog=exeLogListen();
+					futureTask = new FutureTask<LogEntity>(clilog);
 					new Thread(futureTask).start();
 					break;
 				default:
@@ -227,10 +225,11 @@ public class ZkClientTask {
 
 				}else{
 					task.setStat(ZkTaskStatus.fail.name());
-
+					clilog.logData.setFinish(true);
 				}
-				if(futureTask!=null && !futureTask.isDone()){
-					futureTask.cancel(true);
+				
+				if(futureTask!=null){
+					futureTask.cancel(true);//意义不大，阻塞IO时不起作用
 				}
 
 
@@ -242,14 +241,14 @@ public class ZkClientTask {
 			}
 		}
 
-		public FutureTask<LogEntity> exeLogListen(){
+		public ZkClientLog exeLogListen(){
 			LogEntity logData =new LogEntity();
 			logData.setTaskId(task.getTaskid());
 			logData.setPath(task.getCmdPath()+"/log/"+task.getTaskid()+".log");
 			String myTaskLogPath=ZKPaths.makePath(myLogPath, String.valueOf(task.getTaskid()));
 			ZkClientLog cliLog=new ZkClientLog(logData,exe,myTaskLogPath);
-			FutureTask<LogEntity> futureTask = new FutureTask<LogEntity>(cliLog);
-			return futureTask;
+			
+			return cliLog;
 		}
 
 		public void stopTask() {
@@ -288,7 +287,6 @@ public class ZkClientTask {
 					}else{
 						clientLOG.error("PERFORME task id "+task.getTaskid()+" stop failed !!");
 						task.setStat(ZkTaskStatus.pending.name());
-						System.out.println("===="+exe.getTmpErrInfo());
 						task.setLog(exe.getErrorInf());
 					}
 
