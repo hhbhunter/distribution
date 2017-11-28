@@ -17,7 +17,7 @@ public class StartControl {
 				System.out.println("control update task id="+task.getTaskid()+" stat="+task.getStat());
 			}
 		}).init();
-		int id=1;
+		String id="1";
 		while(true){
 			try {
 				ZkTask task=new ZkTask();
