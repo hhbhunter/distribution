@@ -16,11 +16,7 @@ import com.stp.distribution.framwork.ZKConfig;
 import com.stp.distribution.framwork.ZkDataUtils;
 import com.stp.distribution.framwork.ZkException;
 import com.stp.distribution.framwork.ZkTaskPath;
-/**
- * 
- * @author hhbhunter
- *
- */
+
 public class ZkTaskDistribution {
 
 	private static final Logger distrubtLOG = LoggerFactory.getLogger(ZkTaskDistribution.class);
@@ -79,8 +75,11 @@ public class ZkTaskDistribution {
 			}
 
 		}
-
-		//		ZkDataUtils.transaction(clientData);
+		if(ZkTaskStatus.valueOf(task.getStat()).equals(ZkTaskStatus.check)){
+			
+			task.setStat(ZkTaskStatus.create.name());
+			ZkDataUtils.setData(task.getZkpath(), task.convertJson());
+		}
 	}
 
 
@@ -100,6 +99,7 @@ public class ZkTaskDistribution {
 				}
 			}
 			if(num==0){
+				distrubtLOG.info("user choice "+zktask.getType()+" taskid = "+zktask.getTaskid()+" is exeClient num = "+num);
 				registClient.updateRegistCache(zktask.getClient(), 1);
 				flag=true;
 			}
@@ -107,15 +107,8 @@ public class ZkTaskDistribution {
 			//不符合实际ip数量，将自动分配
 			num=zktask.getExeNum();
 			List<String> clients=new ArrayList<>();
-			synchronized (registClient) {//目前实现方式可以不加锁
+			synchronized (registClient) {
 
-				distrubtLOG.info("choice "+zktask.getType()+" taskid = "+zktask.getTaskid()+" is exeClient num = "+num);
-				Map<String,Integer> clietMap=registClient.getRegistCache();
-				for(String client:clietMap.keySet()){
-					if(clietMap.get(client)<Integer.valueOf(ZKConfig.getClientExeNum())){
-
-					}
-				}
 				for(Map.Entry<String, Integer> client:registClient.getRegistCache().entrySet()){
 					if(client.getValue()<Integer.valueOf(ZKConfig.getClientExeNum())){
 						clients.add(client.getKey());
@@ -123,14 +116,9 @@ public class ZkTaskDistribution {
 					}
 					if(num==0){
 						zktask.setClient(clients);
-						try {
-							ZkDataUtils.setData(zktask.getZkpath(), zktask.convertJson());
-							flag=true;
-							registClient.updateRegistCache(clients, 1);
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
+						distrubtLOG.info("choice "+zktask.getType()+" taskid = "+zktask.getTaskid()+" is exeClient num = "+num);
+						flag=true;
+						registClient.updateRegistCache(clients, 1);
 
 						break;
 					}else{
