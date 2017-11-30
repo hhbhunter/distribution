@@ -94,6 +94,10 @@ public class ZkClientTask {
 
 
 		switch (ZkTaskStatus.valueOf(task.getStat())) {
+		case check:
+			
+//			ZkDataUtils.setKVData(myClientProcessPath, ProcessKey.STAT, ZkTaskStatus.create.name());
+			break;
 		case success:
 			//process task update
 			ZkDataUtils.setKVData(myClientProcessPath, ProcessKey.STAT, ZkTaskStatus.success.name());
@@ -201,10 +205,11 @@ public class ZkClientTask {
 		public void startTask(){
 
 			clientLOG.info("Client start execute cmd="+task.getStartCmd()+" cmdPath="+task.getCmdPath());
+			FutureTask<LogEntity> futureTask = null;
+			ZkClientLog clilog=null;
 			try {
 				exeMap.put(task.getTaskid(), this);
-				FutureTask<LogEntity> futureTask = null;
-				ZkClientLog clilog=null;
+				
 				switch (TaskType.valueOf(task.getType())) {
 				case PERFORME:
 					clilog=exeLogListen();
@@ -218,6 +223,9 @@ public class ZkClientTask {
 				//外部stop
 				if(taskFinish){
 					clientLOG.info(task.getTaskid() + " is user stop !!");
+					clilog.logData.setFinish(true);
+					task.setStat(ZkTaskStatus.success.name());
+					ZkDataUtils.setData(task.getZkpath(), task.convertJson());
 					return;
 				}
 				if(stat==0){
@@ -226,6 +234,7 @@ public class ZkClientTask {
 				}else{
 					task.setStat(ZkTaskStatus.fail.name());
 					clilog.logData.setFinish(true);
+					System.out.println("set logListen true !!");
 				}
 				
 				if(futureTask!=null){
@@ -235,6 +244,7 @@ public class ZkClientTask {
 
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
+				clilog.logData.setFinish(true);
 				task.setStat(ZkTaskStatus.fail.name());
 				task.setLog(e.getMessage());
 				e.printStackTrace();
@@ -301,7 +311,7 @@ public class ZkClientTask {
 			default:
 				break;
 			}
-			if(!exeMap.isEmpty()){
+			if(exeMap.get(task.getTaskid())!=null){
 
 				CmdExec exe=exeMap.get(task.getTaskid()).exe;
 				if(exe!=null)
