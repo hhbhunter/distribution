@@ -4,13 +4,15 @@
 
 分为3个角色：client、user、manager
 1、client	负责命令执行
-2、user	创建有序任务
+2、user	          创建有序任务
 3、manager	管控中心，负责任务的管理分发
 
 使用说明：
 1、zkclientconfig.properties 
 	属性zkclient_role=client/manger 来启动不同角色，zkclient_exenum=1指定单个client同时运行任务数
-2、需实现 TaskResults类中updateDB 回调更新业务状态逻辑，以便持久化
+2、需实现 TaskResults类中接口：
+	updateDB 回调更新业务状态逻辑，以便持久化
+	scpFile 文件处理
 3、TaskCreaterService 提供add/stop/getLog/getClients方法，供外部业务接入
 
 
