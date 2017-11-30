@@ -27,7 +27,7 @@ import com.stp.distribution.util.StringUtils;
  */
 public class ProcessTaskOperate {
 	private static final Logger processLOG = LoggerFactory.getLogger(ProcessTaskOperate.class);
-	
+
 	public static ZkTask getTaskByPath(String controllTaskPath){
 		String task = null;
 		try {
@@ -63,7 +63,7 @@ public class ProcessTaskOperate {
 
 	public static void updateNodeData(Map<String, String> data,ZkTask task,ZkTaskStatus stat) {
 		switch (stat) {
-			
+
 		case success:
 			//update db
 			//del client task
@@ -84,6 +84,9 @@ public class ProcessTaskOperate {
 
 			break;
 		case create:
+			for(String client:task.getClient())
+			operatCliTask(data, task,client);
+			break;
 		case running:
 			//do nothing
 			processLOG.info("++++++++++"+task.getTaskid()+"+++++"+stat.name());
@@ -115,13 +118,9 @@ public class ProcessTaskOperate {
 			ZkTask zombieTask=getTaskByPath(zombiePath);
 			String newPath=task.getZkpath();
 			if(!newPath.equals(zombiePath)||currVsNewIndex(currIndex, ZKPaths.getNodeFromPath(zombiePath), task.getType())){
-				System.out.println("======================");
+				/*如果机器ip临时变更会导致client上报process client变化*/
 				for(String client:keys){
-					System.out.println("client==="+client);
-					String clientTaskPath=ZKPaths.makePath(ZkTaskPath.getClientTaskPath(task.getType(), client),String.valueOf(task.getTaskid()));
-					if(ZkDataUtils.isExists(clientTaskPath)){
 						operatCliTask(zombieProcess, zombieTask, client);
-					}
 				}
 			}
 		} catch (Exception e) {
@@ -135,7 +134,7 @@ public class ProcessTaskOperate {
 		if(ZkDataUtils.isExists(processPath)){
 			processLOG.error("process "+task.getType()+" taskid = "+task.getTaskid()+" is exists !!");
 			// 当前会跳过已存在任务，往下执行，有可能产生僵尸任务
-						zombieTask(task,processPath);
+			zombieTask(task,processPath);
 			return false;
 		}
 		if(!ZkTaskManager.choiceClient2task(task)){
@@ -148,6 +147,9 @@ public class ProcessTaskOperate {
 			processLOG.error("process "+task.getType()+" taskid = "+task.getTaskid()+" check client failed !!");
 			return false;
 		}
+		//update user data
+		ZkDataUtils.setData(task.getZkpath(), task.convertJson());
+		processLOG.info("update user data sucess !!");
 		Map<String,String> myprocess=new HashMap<>();
 		myprocess.put(ProcessKey.SRC, task.getZkpath());
 		for(String client:task.getClient()){
@@ -155,7 +157,7 @@ public class ProcessTaskOperate {
 		}
 		ZkDataUtils.createDataPath(processPath, JSON.toJSONString(myprocess));
 		for(String client:task.getClient()){
-			ZkDataUtils.createDataPath(ZKPaths.makePath(processPath, client), "{\"stat\":\"create\"}");
+			ZkDataUtils.createDataPath(ZKPaths.makePath(processPath, client), "{\"stat\":\"check\"}");
 		}
 		return true;
 	}
@@ -230,55 +232,47 @@ public class ProcessTaskOperate {
 		}
 	}
 	public static void operatCliTask(Map<String, String> data,ZkTask task,String client){
-		ZkTaskStatus stat1=ZkTaskStatus.valueOf(data.get(client));
-		String taskPath=ZKPaths.makePath(ZkTaskPath.getClientTaskPath(task.getType(), client), String.valueOf(task.getTaskid()));
-		try {
-			if(!ZkDataUtils.isExists(taskPath)){
-				processLOG.error("operatCliTask=" +taskPath+" is not exist!!");
-				return;
-			}
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		switch (stat1) {
-		case fail:
-		case running:
-		case stop:
-			// to stop 
-			processLOG.info("taskid: "+task.getTaskid()+" "+stat1.name()+" "+client+" should stop the task!!!");
-			//client是否存活
-
-			task.setStat(ZkTaskStatus.stop.name());
+			ZkTaskStatus stat1=ZkTaskStatus.valueOf(data.get(client));
+			String taskPath=ZKPaths.makePath(ZkTaskPath.getClientTaskPath(task.getType(), client), String.valueOf(task.getTaskid()));
 			try {
-				ZkDataUtils.setData(taskPath, task.convertJson());
-			} catch (Exception e) {
-				processLOG.error(e.getMessage());
-			}
-			break;
-		case create:
-			System.out.println("++++++++ stat is creat to start ++++++++++");
-			task.setStat(ZkTaskStatus.start.name());
-			try {
-				ZkDataUtils.setData(taskPath, task.convertJson());
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				processLOG.error(e.getMessage());
-				e.printStackTrace();
-			}
-			break;
-
-		default:
-			try {
-				if(ZkDataUtils.isExists(taskPath)){
-					System.out.println("check taskPath is exist !!!"+taskPath);
+				if(!ZkDataUtils.isExists(taskPath)){
+					processLOG.error("operatCliTask=" +taskPath+" is not exist!!");
+					return;
 				}
-			} catch (Exception e) {
+			} catch (Exception e1) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				e1.printStackTrace();
 			}
-			break;
-		}
+			switch (stat1) {
+			case fail:
+			case running:
+			case stop:
+				// to stop 
+				processLOG.info("taskid: "+task.getTaskid()+" "+stat1.name()+" "+client+" should stop the task!!!");
+				//client是否存活
+
+				task.setStat(ZkTaskStatus.stop.name());
+				try {
+					ZkDataUtils.setData(taskPath, task.convertJson());
+				} catch (Exception e) {
+					processLOG.error(e.getMessage());
+				}
+				break;
+			case create:
+				System.out.println("++++++++ stat is creat to start ++++++++++");
+				task.setStat(ZkTaskStatus.start.name());
+				try {
+					ZkDataUtils.setData(taskPath, task.convertJson());
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					processLOG.error(e.getMessage());
+					e.printStackTrace();
+				}
+				break;
+
+			default:
+				break;
+			}
 	}
 
 	public static void opfailTask(Map<String, String> data,ZkTask task){

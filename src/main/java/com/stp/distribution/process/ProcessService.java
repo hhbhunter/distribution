@@ -1,8 +1,6 @@
 package com.stp.distribution.process;
 
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.apache.curator.utils.ZKPaths;
@@ -18,12 +16,12 @@ import com.stp.distribution.util.StringUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 /**
  * 
  * @author hhbhunter
  *
  */
+
 public class ProcessService implements IProcess{
 
 	private static final Logger processLOG = LoggerFactory.getLogger(ProcessService.class);
@@ -101,7 +99,13 @@ public class ProcessService implements IProcess{
 			processLOG.debug("process task===\n"+myTask.convertJson());
 
 			/*直接分发执行*/
-			myTask.setStat(ZkTaskStatus.start.name());
+			switch (ZkTaskStatus.valueOf(myTask.getStat())) {
+			case create:
+				myTask.setStat(ZkTaskStatus.start.name());
+				break;
+			default:
+				break;
+			}
 
 			if(currentIndex==null || currentIndex.equalsIgnoreCase(INDEX_PATH)){
 				ZkDataUtils.setKVData(indexPath, INDEX_PATH, ZKPaths.getNodeFromPath(dataMap.get(ProcessKey.SRC)));//更新最新任务编号

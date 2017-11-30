@@ -9,11 +9,7 @@ import com.stp.distribution.entity.ZkTaskStatus;
 import com.stp.distribution.framwork.ZkDataUtils;
 import com.stp.distribution.framwork.ZkTaskPath;
 import com.stp.distribution.manager.ZkRegistMonitor;
-/**
- * 
- * @author hhbhunter
- *
- */
+
 
 
 public class ProcessHandler implements Runnable {//Callable<String>
@@ -71,18 +67,21 @@ public class ProcessHandler implements Runnable {//Callable<String>
 		try {
 			currTaskPath=ProcessTaskOperate.getCurrentTaskIndex(type);
 			processLOG.debug(type + "current index=="+currTaskPath);
-			return creatProcessTask(type,0l);
+			return creatProcessTask(type);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return null;
 	}
-	public String creatProcessTask(String type,long newIndex){
-
+	public String creatProcessTask(String type){
+		long newIndex=0l;
 		if(!currTaskPath.equals(ZkTaskPath.INDEX_PATH)){
 			newIndex=Long.valueOf(currTaskPath.substring(type.length()))+1;
 		}
+		return creatProcessTask(type,newIndex);
+	}
+	public String creatProcessTask(String type,long newIndex){
 
 		String newTaskPath=ProcessTaskOperate.genrateNewIndex(type, String.valueOf(newIndex));
 		processLOG.debug(type + " new processTask==="+newTaskPath);
@@ -96,7 +95,7 @@ public class ProcessHandler implements Runnable {//Callable<String>
 					try{
 						myTask=ProcessTaskOperate.getTaskByPath(controllTaskPath);
 					}catch(Exception e){
-						processLOG.error(" 【json】 formate is error ,please check !!! \n"+myTask.convertJson() );
+						processLOG.error(controllTaskPath+" 【json】 formate is error ,please check !!! " );
 						//跳过错误id，处理
 						creatProcessTask(type,newIndex+1);
 					}
@@ -104,6 +103,7 @@ public class ProcessHandler implements Runnable {//Callable<String>
 						processLOG.info(controllTaskPath+"is null or stop !! "+myTask.convertJson());
 						creatProcessTask(type,newIndex+1);
 					}
+					
 					//create
 					if(ProcessTaskOperate.createProcessTask(myTask)){
 						processLOG.info("create process task id "+myTask.getTaskid()+" ok!! ");
