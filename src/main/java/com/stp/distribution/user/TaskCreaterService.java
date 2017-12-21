@@ -64,9 +64,11 @@ public class TaskCreaterService {
 	
 	public  void stopTask(String taskId){
 		ZkTask task=getExeTask(taskId);
+		boolean flag=false;
 		if(task!=null){
-			taskOperat.stopTask(task);
-		}else{
+			flag=taskOperat.stopTask(task);
+		}
+		if(!flag){
 			//not exist exe task  update status stop
 			task=new ZkTask();
 			task.setTaskid(taskId);
@@ -74,6 +76,7 @@ public class TaskCreaterService {
 			task.setStat(ZkTaskStatus.stop.name());
 			taskRes.updateDB(task);
 		}
+		
 	}
 	/**
 	 * 获取已注册client集合

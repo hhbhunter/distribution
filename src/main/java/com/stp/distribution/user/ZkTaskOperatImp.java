@@ -46,22 +46,23 @@ public class ZkTaskOperatImp implements IZkTaskOperat,Runnable {
 	}
 
 	@Override
-	public void stopTask(ZkTask task) {
+	public boolean stopTask(ZkTask task) {
 		//del all taskid
 		//停止任务，删除
+		boolean flag=false;
 		String taskPath=task.getZkpath();
 		if(!taskPath.equalsIgnoreCase("")){
 			task.setStat(ZkTaskStatus.stop.name());
 			try {
 				ZkDataUtils.setData(taskPath, task.convertJson());
-				//				ZkDataUtils.setData(taskPath, "");
+				flag=true;
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}else{
 			TaskCache.removeTask(task);
 		}
-
+		return flag;
 	}
 
 	@Override

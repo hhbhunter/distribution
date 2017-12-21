@@ -27,7 +27,7 @@ public interface IZkTaskOperat {
 	 */
 	void removeTask(ZkTask task);
 	
-	void stopTask(ZkTask task);
+	boolean stopTask(ZkTask task);
 	
 	void startTask(ZkTask task);
 

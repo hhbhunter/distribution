@@ -9,7 +9,7 @@ import com.alibaba.fastjson.JSON;
 public class ZkTask{
 	
 	
-	public String type="";
+	public String type=""; 
 	public String taskid="-1";
 	public String startCmd="";
 	public String stopCmd="";
@@ -104,10 +104,5 @@ public class ZkTask{
 		return JSON.toJSONString(this);
 	}
 	
-	public static void main(String[] args) {
-		
-		System.out.println(JSON.toJSONString(new ZkTask()));
-	}
-
 	
 }
