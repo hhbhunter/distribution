@@ -32,7 +32,7 @@ public abstract class TaskResults {
 	 * @return
 	 */
 	public abstract boolean scpFile(ZkTask task);
-	
+
 	public  void taskStatEvent(ZkTask task) throws Exception{
 		TaskCache.updateTask(task);
 		controLOG.info("result task id="+task.getTaskid()+" stat="+task.getStat());
@@ -53,33 +53,33 @@ public abstract class TaskResults {
 				}else{
 					controLOG.error("task id="+task.getTaskid()+"not has create processPath="+processPath);
 				}
-				
+
 			}else{
 				controLOG.error("task id="+task.getTaskid()+" not has exe client ip");
 			}
-			
+
 			break;
 		case stop:
 			if(task.getClient().size()==0){
 				TaskCache.delTask(task.getTaskid());
-				break;
-			}
-			//已执行
-			String processPath=ZKPaths.makePath(ZkTaskPath.getProcessPath(task.type),String.valueOf(task.getTaskid()));
-			String indexPath=ZKPaths.makePath(ZkTaskPath.getProcessPath(task.type), ZkTaskPath.INDEX_PATH);
-			String currentIndex=ZkDataUtils.getKVData(indexPath, ZkTaskPath.INDEX_PATH);
-			if(!ProcessTaskOperate.currVsNewIndex(currentIndex,ZKPaths.getNodeFromPath(task.getZkpath()),task.getType())){
-				Map<String,String> data=new HashMap<>();
-				if(ZkDataUtils.isExists(processPath)){
-					for(String client:task.getClient()){
-						data.put(ZKPaths.makePath(ZkTaskPath.getClientTaskPath(task.getType(), client),  String.valueOf(task.getTaskid())), task.convertJson());
-					}
-					ZkDataUtils.updateTransaction(data);
-				}
-				
 			}else{
-//				TaskCache.stopCache.put(task.getTaskid(), task);
-				
+				//已执行
+				String processPath=ZKPaths.makePath(ZkTaskPath.getProcessPath(task.type),String.valueOf(task.getTaskid()));
+				String indexPath=ZKPaths.makePath(ZkTaskPath.getProcessPath(task.type), ZkTaskPath.INDEX_PATH);
+				String currentIndex=ZkDataUtils.getKVData(indexPath, ZkTaskPath.INDEX_PATH);
+				if(!ProcessTaskOperate.currVsNewIndex(currentIndex,ZKPaths.getNodeFromPath(task.getZkpath()),task.getType())){
+					Map<String,String> data=new HashMap<>();
+					if(ZkDataUtils.isExists(processPath)){
+						for(String client:task.getClient()){
+							data.put(ZKPaths.makePath(ZkTaskPath.getClientTaskPath(task.getType(), client),  String.valueOf(task.getTaskid())), task.convertJson());
+						}
+						ZkDataUtils.updateTransaction(data);
+					}
+
+				}else{
+					//				TaskCache.stopCache.put(task.getTaskid(), task);
+
+				}
 			}
 			updateDB(task);
 			break;
