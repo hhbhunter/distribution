@@ -65,7 +65,7 @@ public class ZkClientLog implements Callable<LogEntity>{
 			while ((strLine= reader.readLine()) != null) {
 				content+= strLine + System.getProperty("line.separator");;
 				lineNum++;
-				if(strLine != null&&strLine.contains("... end of run")){
+				if(strLine.contains("... end of run")){
 					//bad job dont like this
 					log.setFinish(true);
 				}
