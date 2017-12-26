@@ -16,6 +16,12 @@ public class StartControl {
 				// TODO Auto-generated method stub
 				System.out.println("control update task id="+task.getTaskid()+" stat="+task.getStat());
 			}
+
+			@Override
+			public boolean scpFile(ZkTask task) {
+				// TODO Auto-generated method stub
+				return true;
+			}
 		}).init();
 		String id="1";
 		while(true){
