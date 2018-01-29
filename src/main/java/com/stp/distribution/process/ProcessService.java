@@ -70,9 +70,21 @@ public class ProcessService implements IProcess{
 			}
 		}
 		if(size==task.getClient().size()){
+			if(taskStats.containsKey(task.getTaskid())){
+				if(taskStats.get(task.getTaskid()).equals(ZkTaskStatus.success)){
+					processLOG.info(task.getTaskid() +" 任务状态没有变更");
+					return false;
+				}
+			}
 			taskStats.put(task.getTaskid(),ZkTaskStatus.success);
 		}
 		if(finish==task.getClient().size()){
+			if(taskStats.containsKey(task.getTaskid())){
+				if(taskStats.get(task.getTaskid()).equals(ZkTaskStatus.finish)){
+					processLOG.info(task.getTaskid() +" 任务状态没有变更");
+					return false;
+				}
+			}
 			taskStats.put(task.getTaskid(),ZkTaskStatus.finish);
 		}
 		return true;
@@ -132,7 +144,7 @@ public class ProcessService implements IProcess{
 				processLOG.error("distributTask failed !!!"+e.getMessage());
 				e.printStackTrace();
 				//当前会直接跳过已存在任务id，避免同一个任务在执行期内重复提交
-				collectStat(dataMap,myTask);
+				if(collectStat(dataMap,myTask))
 				updateNodeData(dataMap,myTask,taskStats.get(taskid));
 
 			}
@@ -147,8 +159,7 @@ public class ProcessService implements IProcess{
 			// 任务状态变更
 			dataMap=StringUtils.getStrMapByJSON(json);
 			myTask=ProcessTaskOperate.getTaskByPath(dataMap.get(ProcessKey.SRC));
-			collectStat(dataMap,myTask);
-
+			if(collectStat(dataMap,myTask))
 			//process去删除client任务，而不update数据（没有考虑分布式锁的问题）
 			updateNodeData(dataMap,myTask,taskStats.get(taskid));
 
