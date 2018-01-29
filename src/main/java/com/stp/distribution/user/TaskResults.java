@@ -85,6 +85,7 @@ public abstract class TaskResults {
 			break;
 		case finish:
 			TaskCache.delTask(task.getTaskid());
+			updateDB(task);
 			break;
 		case success:
 		case fail:

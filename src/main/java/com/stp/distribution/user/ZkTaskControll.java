@@ -5,6 +5,8 @@ package com.stp.distribution.user;
  * @author hhbhunter
  *
  */
+import java.util.List;
+
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
@@ -29,6 +31,13 @@ public class ZkTaskControll {
 		@Override
 		public void childEvent(CuratorFramework client, PathChildrenCacheEvent event)
 				throws Exception {
+			try {
+				List<String> resources= ZkDataUtils.getChildren(ZkTaskPath.SOURCE_PATH);
+				if(resources.size()>0) return;
+			} catch (Exception e2) {
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			}
 			contorllTaskEvent(event);
 		}
 	};
