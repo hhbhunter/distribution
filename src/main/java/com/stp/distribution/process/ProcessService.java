@@ -59,7 +59,7 @@ public class ProcessService implements IProcess{
 					if(taskStats.get(task.getTaskid()).getPriority()<stat.getPriority()){
 						taskStats.put(task.getTaskid(), stat);
 					}else{
-						processLOG.info(task.getTaskid() +" 任务状态没有变更");
+						processLOG.info(task.getTaskid() +" 任务状态没有变更"+taskStats.get(task.getTaskid()).name());
 						return false;
 					}
 				}else{
@@ -72,7 +72,7 @@ public class ProcessService implements IProcess{
 		if(size==task.getClient().size()){
 			if(taskStats.containsKey(task.getTaskid())){
 				if(taskStats.get(task.getTaskid()).equals(ZkTaskStatus.success)){
-					processLOG.info(task.getTaskid() +" 任务状态没有变更");
+					processLOG.info(task.getTaskid() +" 任务状态没有变更"+taskStats.get(task.getTaskid()).name());
 					return false;
 				}
 			}
@@ -81,7 +81,7 @@ public class ProcessService implements IProcess{
 		if(finish==task.getClient().size()){
 			if(taskStats.containsKey(task.getTaskid())){
 				if(taskStats.get(task.getTaskid()).equals(ZkTaskStatus.finish)){
-					processLOG.info(task.getTaskid() +" 任务状态没有变更");
+					processLOG.info(task.getTaskid() +" 任务状态没有变更"+taskStats.get(task.getTaskid()).name());
 					return false;
 				}
 			}

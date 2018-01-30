@@ -1,5 +1,7 @@
 package com.stp.distribution.client;
-
+/**
+ * @author hhbhunter
+ */
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -50,7 +52,10 @@ public class ZkClientLog implements Callable<LogEntity>{
 		}
 
 		closeStream();
-		ZkClientTask.manualStop(logData.getTaskId());
+		if(logData.isAuto()){
+			//jmeterbug 引入 自动停止标识
+			ZkClientTask.autoStop(logData.getTaskId());
+		}
 		return logData;
 	}
 	public static LogEntity getLog(LogEntity log) {
@@ -66,8 +71,10 @@ public class ZkClientLog implements Callable<LogEntity>{
 				content+= strLine + System.getProperty("line.separator");;
 				lineNum++;
 				if(strLine.contains("... end of run")){
-					//bad job dont like this
-					log.setFinish(true);
+					if(!log.isFinish()){
+						log.setFinish(true);
+						log.setAuto(true);
+					}
 				}
 			}
 			log.setContent(content);

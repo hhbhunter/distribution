@@ -46,6 +46,8 @@ public class ProcessTaskListen {
 
 		switch (event.getType()) {
 		case CHILD_ADDED:
+			//自己创建，不做维护
+			break;
 		case CHILD_UPDATED:
 			String childPath=event.getData().getPath();
 			String stat=ZkDataUtils.getKVData(childPath,ProcessKey.STAT);

@@ -1,5 +1,7 @@
 package com.stp.distribution.client;
-
+/**
+ * @author hhbhunter
+ */
 import java.io.File;
 import java.util.Map;
 import java.util.concurrent.FutureTask;
@@ -95,8 +97,8 @@ public class ZkClientTask {
 
 		switch (ZkTaskStatus.valueOf(task.getStat())) {
 		case check:
-			
-//			ZkDataUtils.setKVData(myClientProcessPath, ProcessKey.STAT, ZkTaskStatus.create.name());
+
+			//			ZkDataUtils.setKVData(myClientProcessPath, ProcessKey.STAT, ZkTaskStatus.create.name());
 			break;
 		case success:
 			//process task update
@@ -115,7 +117,17 @@ public class ZkClientTask {
 			new TaskExceute(task).start();
 			break;
 		case stop:
-			new TaskExceute(task).start();
+			if(exeMap.containsKey(task.getTaskid())){
+				System.out.println("stop命令，map包含此任务=="+task.getTaskid());
+				TaskExceute stopTask=exeMap.get(task.getTaskid());
+				//人工停止
+				stopTask.taskFinish=true;
+				stopTask.stopTask();
+				clientZkTaskEvent(stopTask.getTask());
+			}else{
+				System.out.println("stop命令，map不包含此任务=="+task.getTaskid());
+//				new TaskExceute(task).start();
+			}
 			break;
 		case pause:
 			//					ZkDataUtils.setKVData(myClientProcessPath, ProcessKey.STAT, ZkTaskStatus.pause.name());
@@ -154,16 +166,18 @@ public class ZkClientTask {
 		ZkDataUtils.setData(registPath, exenum);
 		ZkDataUtils.setData(confPath, exenum);
 	}
-	public static void manualStop(String taskid){
-		ZkTask task=exeMap.get(taskid).task;
-		task.setStat(ZkTaskStatus.success.name());
-		try {
-			ZkDataUtils.setData(task.getZkpath(), task.convertJson());
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	/**
+	 * jmeter bug 引入
+	 * @param taskid
+	 */
+	public static void autoStop(String taskid){
+		if(exeMap.containsKey(taskid)){
+			System.out.println("stop命令，map包含此任务=="+taskid);
+			exeMap.get(taskid).stopTask();
+		}else{
+			System.out.println("stop命令，map不包含此任务=="+taskid);
+//			new TaskExceute(task).start();
 		}
-		exeMap.get(taskid).stopTask();
 	}
 
 	/**
@@ -176,7 +190,17 @@ public class ZkClientTask {
 	private class TaskExceute extends Thread{
 		boolean taskFinish=false;
 		ZkTask task;
+		ZkClientLog clilog=null;
 		CmdExec exe =new CmdExec();
+
+		public ZkTask getTask() {
+			return task;
+		}
+		public void setTask(ZkTask task) {
+			this.task = task;
+		}
+
+
 		public TaskExceute(ZkTask task) {
 			this.task=task;
 		}
@@ -194,6 +218,7 @@ public class ZkClientTask {
 				break;
 			}
 			try {
+				if(!taskFinish)
 				clientZkTaskEvent(task);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -206,10 +231,10 @@ public class ZkClientTask {
 
 			clientLOG.info("Client start execute cmd="+task.getStartCmd()+" cmdPath="+task.getCmdPath());
 			FutureTask<LogEntity> futureTask = null;
-			ZkClientLog clilog=null;
+			
 			try {
 				exeMap.put(task.getTaskid(), this);
-				
+
 				switch (TaskType.valueOf(task.getType())) {
 				case PERFORME:
 					clilog=exeLogListen();
@@ -221,22 +246,28 @@ public class ZkClientTask {
 				}
 				int stat=exe.cmdExec(task.getStartCmd(),null,new File(task.getCmdPath()),true);
 				//外部stop
-				if(taskFinish){
+				/*if(taskFinish){
 					clientLOG.info(task.getTaskid() + " is user stop !!");
-					clilog.logData.setFinish(true);
+					if(!clilog.logData.isFinish()){
+						clilog.logData.setFinish(true);
+					}
 					task.setStat(ZkTaskStatus.success.name());
-					ZkDataUtils.setData(task.getZkpath(), task.convertJson());
+					//					ZkDataUtils.setData(task.getZkpath(), task.convertJson());
 					return;
-				}
+				}*/
 				if(stat==0){
 					task.setStat(ZkTaskStatus.success.name());
 
 				}else{
-					task.setStat(ZkTaskStatus.fail.name());
+					if(clilog.logData.isAuto()){
+						task.setStat(ZkTaskStatus.success.name());
+					}else{
+						task.setStat(ZkTaskStatus.fail.name());
+					}
 					clilog.logData.setFinish(true);
 					System.out.println("set logListen true !!");
 				}
-				
+
 				if(futureTask!=null){
 					futureTask.cancel(true);//意义不大，阻塞IO时不起作用
 				}
@@ -257,7 +288,7 @@ public class ZkClientTask {
 			logData.setPath(task.getCmdPath()+"/log/"+task.getTaskid()+".log");
 			String myTaskLogPath=ZKPaths.makePath(myLogPath, String.valueOf(task.getTaskid()));
 			ZkClientLog cliLog=new ZkClientLog(logData,exe,myTaskLogPath);
-			
+
 			return cliLog;
 		}
 
@@ -268,8 +299,9 @@ public class ZkClientTask {
 				task.setStat(ZkTaskStatus.finish.name());
 				break;
 			case PERFORME:
-				if(exeMap.containsKey(task.getTaskid())){
-					exeMap.get(task.getTaskid()).taskFinish=true;
+				
+				if(!clilog.logData.isFinish()){
+					clilog.logData.setFinish(true);
 				}
 				if(!new File(task.getCmdPath()).exists()){
 					task.setLog(task.getCmdPath()+" is not exist !!");

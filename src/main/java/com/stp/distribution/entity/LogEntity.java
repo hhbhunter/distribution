@@ -1,12 +1,24 @@
 package com.stp.distribution.entity;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+/**
+ * @author hhbhunter
+ */
 public class LogEntity {
 	String path;
 	String content;
 	int lineNum;
 	String taskId;
-	boolean finish=false;
+	// 确保线程安全
+	AtomicBoolean finish=new AtomicBoolean(false);
+	boolean auto=false;
 	
+	public boolean isAuto() {
+		return auto;
+	}
+	public void setAuto(boolean auto) {
+		this.auto = auto;
+	}
 	public String getTaskId() {
 		return taskId;
 	}
@@ -14,10 +26,10 @@ public class LogEntity {
 		this.taskId = taskId;
 	}
 	public boolean isFinish() {
-		return finish;
+		return finish.get();
 	}
 	public void setFinish(boolean finish) {
-		this.finish = finish;
+		this.finish.set(finish);
 	}
 	public String getPath() {
 		return path;
