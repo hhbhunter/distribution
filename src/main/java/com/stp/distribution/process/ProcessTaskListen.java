@@ -49,15 +49,18 @@ public class ProcessTaskListen {
 			//自己创建，不做维护
 			break;
 		case CHILD_UPDATED:
-			String childPath=event.getData().getPath();
-			String stat=ZkDataUtils.getKVData(childPath,ProcessKey.STAT);
-			processLOG.info("update stat==="+stat+" client"+childPath);
-			String parentPath=ZKPaths.getPathAndNode(childPath).getPath();
-			String client=ZKPaths.getNodeFromPath(childPath);
-			if(ZkDataUtils.isExists(parentPath)){
-				ZkDataUtils.setKVData(parentPath, client, stat);
-			}else{
-				processLOG.error(parentPath+ " is DELETE !!");
+			//监听事件队列是顺序的，再做一层保护
+			synchronized (event) {
+				String childPath=event.getData().getPath();
+				String stat=ZkDataUtils.getKVData(childPath,ProcessKey.STAT);
+				processLOG.info("ProcessChildren update stat==="+stat+" client"+childPath);
+				String parentPath=ZKPaths.getPathAndNode(childPath).getPath();
+				String client=ZKPaths.getNodeFromPath(childPath);
+				if(ZkDataUtils.isExists(parentPath)){
+					ZkDataUtils.setKVData(parentPath, client, stat);
+				}else{
+					processLOG.error(parentPath+ " is DELETE !!");
+				}
 			}
 			break;
 
