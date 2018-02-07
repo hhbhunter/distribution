@@ -15,7 +15,7 @@
 三、使用说明：
 1、zkclientconfig.properties 
 	属性zkclient_role=client/manger 来启动不同角色，zkclient_exenum=1指定单个client同时运行任务数
-2、需实现 TaskResults类中接口：
+2、user 需实现 TaskResults类中接口：
 	updateDB 回调更新业务状态逻辑，以便持久化
 	scpFile 文件处理
 3、TaskCreaterService 提供add/stop/getLog/getClients方法，供外部业务接入
