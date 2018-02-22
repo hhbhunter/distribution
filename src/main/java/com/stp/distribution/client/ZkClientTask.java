@@ -3,6 +3,7 @@ package com.stp.distribution.client;
  * @author hhbhunter
  */
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.FutureTask;
 
@@ -118,6 +119,11 @@ public class ZkClientTask {
 			break;
 		case stop:
 			if(exeMap.containsKey(task.getTaskid())){
+				//client重启后任务存在但没有exe对象，需要自动去停
+				if(exeMap.get(task.getTaskid())==null){
+					new TaskExceute(task).start();
+					break;
+				}
 				System.out.println("stop命令，map包含此任务=="+task.getTaskid());
 				TaskExceute stopTask=exeMap.get(task.getTaskid());
 				//人工停止
@@ -179,12 +185,23 @@ public class ZkClientTask {
 //			new TaskExceute(task).start();
 		}
 	}
+	
+	public void retrieveTask(TaskType type){
+		String typePath=ZKPaths.makePath(myClientPath, type.name());
+		try {
+			List<String> tasks=ZkDataUtils.getChildren(typePath);
+			for(String task:tasks){
+				exeMap.put(task,null);
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 	/**
 	 * process更新任务状态，通知各个client
 	 * 只包含start、stop、finish
-	 * @author houhuibin
-	 *
 	 */
 
 	private class TaskExceute extends Thread{

@@ -74,8 +74,15 @@ public class ZkClientControll {
 		performChildrenCache=new PathChildrenCache(client, performPath, true);
 
 	}
+	
 	public ZkClientControll(CuratorFramework client){
 		this(client, ZkTaskPath.getClientPath(myip));
+	}
+	/**
+	 * client reboot deal
+	 */
+	public void retrieveTask(){
+		clientTaskExe.retrieveTask(TaskType.PERFORME);
 	}
 
 	public void initClient(){

@@ -11,6 +11,9 @@ public class ClientStart {
 	
 	private static void startClient(){
 		ZkClientControll zkcli=new ZkClientControll(ZkDataUtils.getZKinstance());
+		/* ｃｌｉｅｎｔ　重启需要对已有任务进行加载*/
+		zkcli.retrieveTask();
+		
 		zkcli.initClient();
 	}
 	
