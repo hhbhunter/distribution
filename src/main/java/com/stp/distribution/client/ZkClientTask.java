@@ -59,12 +59,14 @@ public class ZkClientTask {
 			if(!ZkDataUtils.isExists(dataPath)){
 				throw new ZkException(dataPath+"is not exist !!!");
 			}
+			if(dataPath.contains("log"))break;
 			clientLOG.info("client CHILD_ADDED data ==== "+event.getData().getPath());
 			updateMonitorNum(1, task.getType(),myip);
 			map.put(task.getTaskid(), task);
 			clientZkTaskEvent(task);
 			break;
 		case CHILD_REMOVED:
+			if(dataPath.contains("log"))break;
 			updateMonitorNum(-1, task.getType(),myip);
 			map.remove(task.getTaskid());
 			clientLOG.info("client CHILD_REMOVED data:"+event.getData().getPath());
@@ -118,22 +120,18 @@ public class ZkClientTask {
 			new TaskExceute(task).start();
 			break;
 		case stop:
-			if(exeMap.containsKey(task.getTaskid())){
-				//client重启后任务存在但没有exe对象，需要自动去停
-				if(exeMap.get(task.getTaskid())==null){
-					new TaskExceute(task).start();
-					break;
-				}
-				System.out.println("stop命令，map包含此任务=="+task.getTaskid());
-				TaskExceute stopTask=exeMap.get(task.getTaskid());
-				//人工停止
-				stopTask.taskFinish=true;
-				stopTask.stopTask();
-				clientZkTaskEvent(stopTask.getTask());
-			}else{
+			//client重启后任务存在但没有exe对象，需要自动去停
+			if(exeMap.get(task.getTaskid())==null){
 				System.out.println("stop命令，map不包含此任务=="+task.getTaskid());
-//				new TaskExceute(task).start();
+				new TaskExceute(task).start();
+				break;
 			}
+			System.out.println("stop命令，map包含此任务=="+task.getTaskid());
+			TaskExceute stopTask=exeMap.get(task.getTaskid());
+			//人工停止
+			stopTask.taskFinish=true;
+			stopTask.stopTask();
+			clientZkTaskEvent(stopTask.getTask());
 			break;
 		case pause:
 			//					ZkDataUtils.setKVData(myClientProcessPath, ProcessKey.STAT, ZkTaskStatus.pause.name());
@@ -172,20 +170,7 @@ public class ZkClientTask {
 		ZkDataUtils.setData(registPath, exenum);
 		ZkDataUtils.setData(confPath, exenum);
 	}
-	/**
-	 * jmeter bug 引入
-	 * @param taskid
-	 */
-	public static void autoStop(String taskid){
-		if(exeMap.containsKey(taskid)){
-			System.out.println("stop命令，map包含此任务=="+taskid);
-			exeMap.get(taskid).stopTask();
-		}else{
-			System.out.println("stop命令，map不包含此任务=="+taskid);
-//			new TaskExceute(task).start();
-		}
-	}
-	
+
 	public void retrieveTask(TaskType type){
 		String typePath=ZKPaths.makePath(myClientPath, type.name());
 		try {
@@ -193,7 +178,7 @@ public class ZkClientTask {
 			for(String task:tasks){
 				exeMap.put(task,null);
 			}
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -204,7 +189,7 @@ public class ZkClientTask {
 	 * 只包含start、stop、finish
 	 */
 
-	private class TaskExceute extends Thread{
+	class TaskExceute extends Thread{
 		boolean taskFinish=false;
 		ZkTask task;
 		ZkClientLog clilog=null;
@@ -236,7 +221,7 @@ public class ZkClientTask {
 			}
 			try {
 				if(!taskFinish)
-				clientZkTaskEvent(task);
+					clientZkTaskEvent(task);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -248,7 +233,7 @@ public class ZkClientTask {
 
 			clientLOG.info("Client start execute cmd="+task.getStartCmd()+" cmdPath="+task.getCmdPath());
 			FutureTask<LogEntity> futureTask = null;
-			
+
 			try {
 				exeMap.put(task.getTaskid(), this);
 
@@ -276,6 +261,7 @@ public class ZkClientTask {
 					task.setStat(ZkTaskStatus.success.name());
 
 				}else{
+					
 					if(clilog.logData.isAuto()){
 						task.setStat(ZkTaskStatus.success.name());
 					}else{
@@ -308,6 +294,15 @@ public class ZkClientTask {
 
 			return cliLog;
 		}
+		public int exeStopCmd(){
+			int stat=-1;
+			if(task.getStopCmd().contains("|")){
+				stat=exe.cmdExec(new String[]{"sh","-c",task.getStopCmd()},null,new File(task.getCmdPath()),true);
+			}else{
+				stat=exe.cmdExec(task.getStopCmd(),null,new File(task.getCmdPath()),true);
+			}
+			return stat;
+		}
 
 		public void stopTask() {
 
@@ -316,7 +311,7 @@ public class ZkClientTask {
 				task.setStat(ZkTaskStatus.finish.name());
 				break;
 			case PERFORME:
-				
+
 				if(!clilog.logData.isFinish()){
 					clilog.logData.setFinish(true);
 				}
@@ -333,12 +328,12 @@ public class ZkClientTask {
 					break;
 				}
 				try {
-					int stat=-1;
-					if(task.getStopCmd().contains("|")){
-						stat=exe.cmdExec(new String[]{"sh","-c",task.getStopCmd()},null,new File(task.getCmdPath()),true);
-					}else{
-						stat=exe.cmdExec(task.getStopCmd(),null,new File(task.getCmdPath()),true);
-					}
+					int stat=exeStopCmd();
+//					if(task.getStopCmd().contains("|")){
+//						stat=exe.cmdExec(new String[]{"sh","-c",task.getStopCmd()},null,new File(task.getCmdPath()),true);
+//					}else{
+//						stat=exe.cmdExec(task.getStopCmd(),null,new File(task.getCmdPath()),true);
+//					}
 					if(stat==0){
 						clientLOG.info("PERFORME task id "+task.getTaskid()+" stop ok !!");
 						task.setStat(ZkTaskStatus.finish.name());

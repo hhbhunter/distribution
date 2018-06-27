@@ -54,9 +54,28 @@ public class ZkClientLog implements Callable<LogEntity>{
 		closeStream();
 		if(logData.isAuto()){
 			//jmeterbug 引入 自动停止标识
-			ZkClientTask.autoStop(logData.getTaskId());
+			autoStop(logData.getTaskId());
 		}
 		return logData;
+	}
+	/**
+	 * jmeter bug 引入
+	 * @param taskid
+	 */
+	public  void autoStop(String taskid){
+		String cmd="ps -ef | grep -v grep | grep "+taskid+" | awk '{print $2}' | xargs kill ";
+		int stat=-1;
+		if(cmd.contains("|")){
+			stat=currExec.cmdExec(new String[]{"sh","-c",cmd},null,null,true);
+		}else{
+			stat=currExec.cmdExec(cmd,null,null,true);
+		}
+		if(stat==0){
+			System.out.println("autoStop taskid="+taskid+" success!!");
+		}else{
+			System.out.println("autoStop taskid="+taskid+" failed!!");
+		}
+		
 	}
 	public static LogEntity getLog(LogEntity log) {
 
@@ -72,6 +91,7 @@ public class ZkClientLog implements Callable<LogEntity>{
 				lineNum++;
 				if(strLine.contains("... end of run")){
 					if(!log.isFinish()){
+						
 						log.setFinish(true);
 						log.setAuto(true);
 					}
