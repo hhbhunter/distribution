@@ -18,6 +18,7 @@ import com.alibaba.fastjson.JSON;
 import com.stp.distribution.entity.ZkTask;
 import com.stp.distribution.framwork.ZkDataUtils;
 import com.stp.distribution.framwork.ZkTaskPath;
+import com.stp.distribution.util.UtilTool;
 
 
 public class ZkTaskControll {
@@ -26,19 +27,15 @@ public class ZkTaskControll {
 	private String type;
 	private PathChildrenCache controllCache;
 	private TaskResults taskRes;
+	
+
 	private PathChildrenCacheListener taskListener=new PathChildrenCacheListener() {
 
 		@Override
 		public void childEvent(CuratorFramework client, PathChildrenCacheEvent event)
 				throws Exception {
-			try {
-				List<String> resources= ZkDataUtils.getChildren(ZkTaskPath.SOURCE_PATH);
-				if(resources.size()>0) return;
-			} catch (Exception e2) {
-				// TODO Auto-generated catch block
-				e2.printStackTrace();
-			}
 			contorllTaskEvent(event);
+			controLOG.info("user is start....ok....");
 		}
 	};
 	public ZkTaskControll(CuratorFramework client,String type,TaskResults taskRes){
@@ -79,7 +76,7 @@ public class ZkTaskControll {
 			// TODO Auto-generated catch block
 			controLOG.error(e.getMessage());
 		}
-	
+		
 	}
 
 

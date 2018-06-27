@@ -5,6 +5,7 @@ package com.stp.distribution.user;
  * 提供addTask、stopTask
  *
  */
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +39,7 @@ public class TaskCreaterService {
 		this.taskRes=taskRes;
 		synchronized (TaskCreaterService.class) {
 			if(first){
-				init();//不推荐的方式
+//				init();//不推荐的方式
 				first=false;
 			}
 		}
@@ -47,8 +48,21 @@ public class TaskCreaterService {
 	
 	//需提前初始化
 	public void init(){
-		initTaskResource();
-		initControl();
+		List<String> resources=new ArrayList<String>();
+		try {
+			//临时处理，保证一个user具有执行权限
+			resources = ZkDataUtils.getChildren(ZkTaskPath.SOURCE_PATH);
+			taskLOG.info("ZkTaskPath.SOURCE_PATH size=="+resources.size());
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if(resources.isEmpty()){
+			initTaskResource();
+			initControl();
+		}
+		
 		new Thread(taskOperat).start();
 	}
 	private static void initControl(){
@@ -131,8 +145,15 @@ public class TaskCreaterService {
 	}
 	
 	private  void initTaskResource(){
-		final String resourcePath=ZkTaskPath.getResourcePath(UtilTool.getLocalIp());
+		String ip=UtilTool.getLocalIp();
+		
+		final String resourcePath=ZkTaskPath.getResourcePath(ip);
 		try {
+//			String sourceip=ZkDataUtils.getData(ZkTaskPath.SOURCE_PATH);
+//			if(sourceip.equals("")||sourceip.equals(null)){
+//				
+//				ZkDataUtils.setData(ZkTaskPath.SOURCE_PATH, ip);
+//			}
 			if(!ZkDataUtils.isExists(resourcePath)){
 				ZkDataUtils.getZKinstance().create().withMode(CreateMode.EPHEMERAL).forPath(resourcePath);
 			}
