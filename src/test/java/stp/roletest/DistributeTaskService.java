@@ -60,7 +60,6 @@ public class DistributeTaskService extends TaskResults{
 			executionId=Integer.parseInt(planId);
 		}
 
-
 		switch (ZkTaskStatus.valueOf(task.getStat())) {
 		case stop:
 		case success:
