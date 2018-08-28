@@ -38,7 +38,7 @@ public class StartControl {
 				TaskCache.addTask(task);
 				TimeUnit.MINUTES.sleep(10);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
+				
 				e.printStackTrace();
 			}
 		}
