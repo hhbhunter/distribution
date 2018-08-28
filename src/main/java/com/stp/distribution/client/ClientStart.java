@@ -34,7 +34,7 @@ public class ClientStart {
 			try {
 				Thread.sleep(60000);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
+				
 			}
 		}
 	}
