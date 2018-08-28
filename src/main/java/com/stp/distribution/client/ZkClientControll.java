@@ -48,7 +48,7 @@ public class ZkClientControll {
 		@Override
 		public void childEvent(CuratorFramework client, PathChildrenCacheEvent event)
 				throws Exception {
-			// TODO Auto-generated method stub
+			
 			clientTaskExe.taskProcess(event, autoMap,myip);
 
 		}
@@ -195,7 +195,7 @@ public class ZkClientControll {
 				System.out.println("registPath create failed !!!");
 			}
 		} catch (Exception e1) {
-			// TODO Auto-generated catch block
+			
 			e1.printStackTrace();
 		}
 		final NodeCache registNode = new NodeCache(zkInstance, registPath);
