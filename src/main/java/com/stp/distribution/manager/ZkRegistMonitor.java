@@ -73,11 +73,11 @@ public class ZkRegistMonitor {
 			}else{
 				registCache.put(clientIp, Integer.valueOf(data));
 			}
-			System.out.println("regist:"+clientIp+" data:"+data);
+			//System.out.println("regist:"+clientIp+" data:"+data);
 			break;
 		case CHILD_REMOVED:
 			registCache.remove(clientIp);
-			System.out.println("regist remove:"+clientIp+" data:"+data);
+			//System.out.println("regist remove:"+clientIp+" data:"+data);
 			break;
 		default:
 			break;
