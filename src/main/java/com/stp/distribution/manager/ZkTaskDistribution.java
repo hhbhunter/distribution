@@ -71,7 +71,7 @@ public class ZkTaskDistribution {
 		}
 		if(!clientData.isEmpty()){
 			for(CuratorTransactionResult res:ZkDataUtils.transaction(clientData)){
-				System.out.println("事务提交结果："+res.getType());
+				distrubtLOG.info("事务提交结果："+res.getType());
 			}
 
 		}
