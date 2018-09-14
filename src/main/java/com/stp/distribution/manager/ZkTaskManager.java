@@ -23,7 +23,7 @@ import com.stp.distribution.user.ZkTaskControll;
 
 /**
  * 
- * @author hhbhunter
+ * @author hhbhunter 2017
  *
  */
 //controll task 
