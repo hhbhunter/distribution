@@ -56,7 +56,7 @@ public class ProcessService implements IProcess{
 			default:
 
 				if(taskStats.containsKey(task.getTaskid())){
-					if(taskStats.get(task.getTaskid()).getPriority()<stat.getPriority()){
+					if(taskStats.get(task.getTaskid()).getPriority()<=stat.getPriority()){
 						taskStats.put(task.getTaskid(), stat);
 					}else{
 						processLOG.info(task.getTaskid() +" 任务状态没有变更"+taskStats.get(task.getTaskid()).name());
